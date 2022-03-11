@@ -1,17 +1,27 @@
 defmodule PomodoroAppBot.Bot do
   use TMI
 
-  @impl TMI.Handler
-  def handle_message("!" <> command, sender, chat) do
-    case command do
-      "dice" ->
-        say(chat, Enum.random(~w(⚀ ⚁ ⚂ ⚃ ⚄ ⚅)))
 
+  defguard is_broadcaster(channel, sender) when channel == sender
+
+  @impl TMI.Handler
+  def handle_message("!" <> command, sender, "#" <> sender) do
+    case command do
+      "pomotime " <> pomotime ->
+        case Integer.parse(pomotime) do
+          :error -> say(sender, "Invalid pomo time provided.")
+          _ -> say(sender, "Set pomo time to #{pomotime} minutes")
+        end
+
+      _ ->
+        say(sender, "unrecognized command")
+    end
+  end
+
+  def handle_message("!" <> command, sender, "#" <> chat) do
+    case command do
       "echo " <> rest ->
         say(chat, rest)
-
-      "dance" ->
-        me(chat, "dances for #{sender}")
 
       _ ->
         say(chat, "unrecognized command")

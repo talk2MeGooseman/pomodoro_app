@@ -58,6 +58,16 @@ config :pomodoro_app,
     ]
   ]
 
+config :ueberauth, Ueberauth,
+  providers: [
+    twitch: {Ueberauth.Strategy.Twitch, [default_scope: "user:read:email"]}
+  ]
+
+config :ueberauth, Ueberauth.Strategy.Twitch.OAuth,
+  client_id: System.get_env("TWITCH_CLIENT_ID"),
+  client_secret: System.get_env("TWITCH_CLIENT_SECRET"),
+  redirect_uri: System.get_env("TWITCH_REDIRECT_URI")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
