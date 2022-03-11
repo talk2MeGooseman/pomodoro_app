@@ -7,6 +7,8 @@ defmodule PomodoroApp.Application do
 
   @impl true
   def start(_type, _args) do
+    [bot_config]= Application.fetch_env!(:pomodoro_app, :bots)
+
     children = [
       # Start the Ecto repository
       PomodoroApp.Repo,
@@ -15,9 +17,10 @@ defmodule PomodoroApp.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: PomodoroApp.PubSub},
       # Start the Endpoint (http/https)
-      PomodoroAppWeb.Endpoint
+      PomodoroAppWeb.Endpoint,
       # Start a worker by calling: PomodoroApp.Worker.start_link(arg)
       # {PomodoroApp.Worker, arg}
+      {TMI.Supervisor, bot_config}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
