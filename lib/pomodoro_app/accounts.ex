@@ -350,4 +350,50 @@ defmodule PomodoroApp.Accounts do
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
+
+  def get_user_for_provider(provider, uid) do
+    User
+    |> where(uid: ^uid)
+    |> where(provider: ^provider)
+    |> Repo.one()
+  end
+
+  def get_user_by_username(username) do
+    User
+    |> where(username: ^username)
+    |> Repo.one()
+  end
+
+  def update_user_pomo_time(%User{} = user, time) do
+    User.pomo_time_changeset(user, %{ pomo_time: time }) |> Repo.update()
+  end
+
+  def update_user_break_time(%User{} = user, time) do
+    User.break_time_changeset(user, %{ break_time: time }) |> Repo.update()
+  end
+
+  @spec find_or_register_user_with_oauth(map, map) :: {:ok, %{user: any} | {:error, any}}
+  def find_or_register_user_with_oauth(user_attrs, creds) do
+    case get_user_for_provider("twitch", user_attrs["id"]) do
+      %User{} = user ->
+        User.oauth_update_changeset(user, %{
+          email: user_attrs["email"],
+          username: user_attrs["login"],
+          access_token: creds[:token],
+          refresh_token: creds[:refresh_token]
+        })
+        |> Repo.update()
+
+      _ ->
+        register_user(%{
+          email: user_attrs["email"],
+          password: SecureRandom.base64(),
+          uid: user_attrs["id"],
+          username: user_attrs["login"],
+          provider: "twitch",
+          access_token: creds[:access_token],
+          refresh_token: creds[:refresh_token]
+        })
+    end
+  end
 end

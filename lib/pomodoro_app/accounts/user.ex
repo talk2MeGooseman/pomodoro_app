@@ -8,6 +8,12 @@ defmodule PomodoroApp.Accounts.User do
     field :hashed_password, :string, redact: true
     field :password, :string, virtual: true, redact: true
     field :pomo_time, :integer
+    field :provider, :string
+    field :uid, :string
+    field :username, :string
+    field :access_token, :string, redact: true
+    field :refresh_token, :string, redact: true
+    field :break_time, :integer
 
     timestamps()
   end
@@ -31,9 +37,21 @@ defmodule PomodoroApp.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password])
+    |> cast(attrs, [:email, :password, :username, :provider, :uid, :access_token, :refresh_token])
     |> validate_email()
     |> validate_password(opts)
+  end
+
+  def oauth_update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :username,
+      :provider,
+      :uid,
+      :access_token,
+      :refresh_token
+    ])
+    |> validate_required([:username])
   end
 
   defp validate_email(changeset) do
@@ -110,6 +128,16 @@ defmodule PomodoroApp.Accounts.User do
   def confirm_changeset(user) do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     change(user, confirmed_at: now)
+  end
+
+  def pomo_time_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:pomo_time])
+  end
+
+  def break_time_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:break_time])
   end
 
   @doc """
