@@ -52,7 +52,8 @@ defmodule PomodoroApp.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:tmi, "0.5.1"},
       {:ueberauth_twitch, "~> 0.1.0"},
-      {:secure_random, "~> 0.5.1"}
+      {:secure_random, "~> 0.5.1"},
+      {:oban, "~> 2.11"}
     ]
   end
 

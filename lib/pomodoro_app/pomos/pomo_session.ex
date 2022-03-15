@@ -14,6 +14,7 @@ defmodule PomodoroApp.Pomos.PomoSession do
   def create_changeset(pomo_session, attrs) do
     pomo_session
     |> cast(attrs, [:started_on, :pomo_time, :active, :user_id])
+    |> validate_required([:started_on, :pomo_time, :user_id])
   end
 
   def update_changeset(pomo_session, attrs) do

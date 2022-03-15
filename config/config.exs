@@ -68,6 +68,11 @@ config :ueberauth, Ueberauth.Strategy.Twitch.OAuth,
   client_secret: System.get_env("TWITCH_CLIENT_SECRET"),
   redirect_uri: System.get_env("TWITCH_REDIRECT_URI")
 
+config :pomodoro_app, Oban,
+  repo: PomodoroApp.Repo,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [default: 10]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

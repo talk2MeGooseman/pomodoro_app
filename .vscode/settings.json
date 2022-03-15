@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "development",
+      "database": "pomodoro_app_dev",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ]
+}

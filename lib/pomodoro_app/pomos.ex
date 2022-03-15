@@ -12,9 +12,9 @@ defmodule PomodoroApp.Pomos do
     Repo.get_by(PomoSession, user_id: id)
   end
 
-  def get_active_pomo_for(%PomodoroApp.Accounts.User{} = user) do
+  def get_active_pomo_for(user_id) do
     PomoSession
-    |> where(user_id: ^user.id)
+    |> where(user_id: ^user_id)
     |> where(active: true)
     |> Repo.one()
   end

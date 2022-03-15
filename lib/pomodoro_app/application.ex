@@ -20,7 +20,8 @@ defmodule PomodoroApp.Application do
       PomodoroAppWeb.Endpoint,
       # Start a worker by calling: PomodoroApp.Worker.start_link(arg)
       # {PomodoroApp.Worker, arg}
-      {TMI.Supervisor, bot_config}
+      {TMI.Supervisor, bot_config},
+      {Oban, oban_config()}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -35,5 +36,9 @@ defmodule PomodoroApp.Application do
   def config_change(changed, _new, removed) do
     PomodoroAppWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp oban_config do
+    Application.fetch_env!(:pomodoro_app, Oban)
   end
 end
