@@ -41,7 +41,7 @@ defmodule PomodoroAppWeb.Router do
 
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: PomodoroAppWeb.Telemetry
+      live_dashboard "/live-dashboard", metrics: PomodoroAppWeb.Telemetry
     end
   end
 
@@ -78,6 +78,9 @@ defmodule PomodoroAppWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
+
+    live "/dashboard", UserLive.Show, :show
+    live "/users/:id/show/edit", UserLive.Show, :edit
   end
 
   scope "/", PomodoroAppWeb do
