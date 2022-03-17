@@ -4,34 +4,26 @@ defmodule PomodoroAppBot.Bot do
   alias PomodoroApp.Accounts
   alias PomodoroApp.Pomos
 
-  defguard is_broadcaster(channel, sender) when channel == sender
-
   @impl TMI.Handler
   def handle_message("!" <> command, sender, "#" <> sender) do
     user = Accounts.get_user_by_username(sender)
 
     case command do
+      "pomo" ->
+        case Pomos.get_active_pomo_for(user.id) do
+          nil ->
+            say(sender, "There isnt a pomo currently active.")
+
+          pomo_session ->
+            remaining_minutes = floor(calculate_seconds_remaining(pomo_session) / 60)
+            say(sender, "There is #{remaining_minutes} minutes remaining in the pomo, you got this.")
+        end
+
       "pomostart" ->
         if Pomos.pomo_active_for?(user) do
           say(sender, "You already have a pomodoro running!")
         else
-          case Pomos.create_pomo_session(%{
-                 user_id: user.id,
-                 pomo_time: user.pomo_time,
-                 started_on: NaiveDateTime.utc_now()
-               }) do
-            {:ok, %Pomos.PomoSession{} = pomo_session} ->
-              say(
-                sender,
-                "Pomodoro started, time to focus for the next #{pomo_session.pomo_time} minutes!"
-              )
-
-              seconds_delay = calculate_seconds_delay(pomo_session)
-              enqueue_pomo_timer(user.id, sender, seconds_delay)
-
-            {:error, _error} ->
-              say(sender, "Something went wrong!")
-          end
+          start_pomo_session(user, sender)
         end
 
       "pomoend" ->
@@ -45,7 +37,7 @@ defmodule PomodoroAppBot.Bot do
                 say(sender, "Pomodoro ended!")
 
               {:error, _error} ->
-                say(sender, "Something went wrong!")
+                say(sender, "Uh oh, I had a problem ending current pomo.")
             end
         end
 
@@ -72,8 +64,8 @@ defmodule PomodoroAppBot.Bot do
           :error ->
             say(sender, "Invalid pomo time provided.")
 
-          _ ->
-            case Accounts.update_user_pomo_time(user, pomotime) do
+          value ->
+            case Accounts.update_user_pomo_time(user, value) do
               {:error, _} -> say(sender, "Error updating pomo time.")
               {:ok, user} -> say(sender, "Pomo time updated to #{user.pomo_time} minutes.")
             end
@@ -92,10 +84,38 @@ defmodule PomodoroAppBot.Bot do
     end
   end
 
-  defp calculate_seconds_delay(%Pomos.PomoSession{started_on: started_on, pomo_time: pomo_time}) do
-    trigger_time = NaiveDateTime.add(started_on, pomo_time * 60, :second)
+  defp start_pomo_session(user, channel) do
+    pomo_session_attrs(user)
+    |> Pomos.create_pomo_session()
+    |> case do
+      {:ok, pomo_session} ->
+        seconds_delay = calculate_seconds_remaining(pomo_session)
+        enqueue_pomo_timer(user.id, channel, seconds_delay)
 
-    NaiveDateTime.diff(trigger_time, NaiveDateTime.utc_now(), :second)
+        say(
+          channel,
+          "Pomodoro started, time to focus for the next #{pomo_session.pomo_time} minutes!"
+        )
+
+      {:error, _error} ->
+        say(channel, "Something went wrong!")
+    end
+  end
+
+  defp pomo_session_attrs(user) do
+    start_on = NaiveDateTime.utc_now()
+    end_on = NaiveDateTime.add(start_on, user.pomo_time * 60, :second)
+
+    %{
+      user_id: user.id,
+      pomo_time: user.pomo_time,
+      start: start_on,
+      end: end_on
+    }
+  end
+
+  defp calculate_seconds_remaining(%Pomos.PomoSession{end: end_on}) do
+    NaiveDateTime.diff(end_on, NaiveDateTime.utc_now(), :second)
   end
 
   defp enqueue_pomo_timer(user_id, channel, seconds_delay) do
