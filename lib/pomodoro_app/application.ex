@@ -21,7 +21,8 @@ defmodule PomodoroApp.Application do
       # Start a worker by calling: PomodoroApp.Worker.start_link(arg)
       # {PomodoroApp.Worker, arg}
       {TMI.Supervisor, bot_config},
-      {Oban, oban_config()}
+      {Oban, oban_config()},
+      PomodoroAppWeb.Presence
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
