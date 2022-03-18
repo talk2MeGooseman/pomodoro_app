@@ -28,9 +28,11 @@ defmodule PomodoroAppWeb.Presence do
     end
   end
 
-  def clean_up_pomo_presence(channel) do
+  def clean_up_pomo_presence(channel, pid \\ self()) do
+    IO.inspect(self())
+
     list("channel:#{channel}")
     |> Map.keys()
-    |> Enum.each(fn x -> untrack(self(), "channel:#{channel}", x) end)
+    |> Enum.each(fn x -> untrack(pid, "channel:#{channel}", x) end)
   end
 end

@@ -24,6 +24,10 @@ defmodule PomodoroApp.Pomos do
     Repo.get_by(PomoSession, user_id: id)
   end
 
+  def get_pomo_session_by_id(id) do
+    Repo.get(PomoSession, id)
+  end
+
   def get_active_pomo_for(user_id) do
     PomoSession
     |> where(user_id: ^user_id)

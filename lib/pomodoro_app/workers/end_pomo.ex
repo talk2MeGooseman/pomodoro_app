@@ -1,25 +1,18 @@
 defmodule PomodoroApp.Workers.EndPomo do
   use Oban.Worker, queue: :default
 
-  import Logger
+  require Logger
 
   alias PomodoroApp.Pomos
-  alias PomodoroAppBot.Bot
+  alias PomodoroAppBot.{PomoManagement}
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"user_id" => user_id, "channel" => channel} = _args}) do
-    case Pomos.get_active_pomo_for(user_id) do
-      %Pomos.PomoSession{} = pomo_session ->
-        # Need to check if the pomo should end based off of the time
-        case Pomos.update_pomo_session(pomo_session, %{active: false}) do
-          {:ok, _pomo_session} ->
-            Bot.say(channel, "Pomodoro ended!")
-
-          {:error, _error} ->
-            Bot.say(channel, "Something went wrong!")
-        end
+  def perform(%Oban.Job{args: %{"session_id" => session_id, "channel" => channel}}) do
+    case Pomos.get_pomo_session_by_id(session_id) do
+      %Pomos.PomoSession{active: true} = pomo_session ->
+        PomoManagement.end_session(pomo_session, channel)
       _ ->
-        Logger.debug("No active pomo session found for user #{user_id}. No nothing")
+        Logger.debug("Pomo Session is no longer active")
     end
 
     :ok
