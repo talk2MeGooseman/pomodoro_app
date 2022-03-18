@@ -8,7 +8,7 @@ defmodule PomodoroApp.Repo.Migrations.CreateUsersAuthTables do
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
       add :confirmed_at, :naive_datetime
-      add :pomo_time, :integer, null: true, default: 20
+      add :pomo_time, :integer, null: true, default: 25
       add :provider, :string, null: false
       add :access_token, :string, null: true
       add :refresh_token, :string, null: true
@@ -43,5 +43,26 @@ defmodule PomodoroApp.Repo.Migrations.CreateUsersAuthTables do
     end
 
     create index(:pomo_sessions, [:user_id])
+
+    create table(:members) do
+      add :username, :string, null: false
+
+      timestamps()
+    end
+
+    create unique_index(:members, [:username])
+
+    create table(:pomo_session_members) do
+      add :pomo_session_id, references(:pomo_sessions, on_delete: :delete_all), null: false
+      add :member_id, references(:members, on_delete: :delete_all), null: false
+      add :pomo_time, :integer, null: false
+      add :goal, :string
+
+      timestamps()
+    end
+
+    create index(:pomo_session_members, [:pomo_session_id])
+    create index(:pomo_session_members, [:member_id])
+    create unique_index(:pomo_session_members, [:pomo_session_id, :member_id])
   end
 end

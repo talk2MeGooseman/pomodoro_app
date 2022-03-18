@@ -8,6 +8,8 @@ defmodule PomodoroApp.Pomos.PomoSession do
     field :pomo_time, :integer
     field :active, :boolean
     belongs_to :user, PomodoroApp.Accounts.User
+    has_many :pomo_session_members, PomodoroApp.Pomos.PomoSessionMember
+    has_many :members, through: [:pomo_session_members, :member]
 
     timestamps()
   end

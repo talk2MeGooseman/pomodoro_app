@@ -6,7 +6,7 @@ defmodule PomodoroApp.Pomos do
   import Ecto.Query, warn: false
   alias PomodoroApp.Repo
   alias PomodoroApp.Accounts.User
-  alias PomodoroApp.Pomos.{PomoSession}
+  alias PomodoroApp.Pomos.{PomoSession, Member, PomoSessionMember}
 
   def build_pomo_session_attrs(%User{id: id, pomo_time: pomo_time}) do
     start_on = NaiveDateTime.utc_now()
@@ -51,5 +51,47 @@ defmodule PomodoroApp.Pomos do
   def update_pomo_session(%PomoSession{} = pomo_session, attrs \\ %{}) do
     PomoSession.update_changeset(pomo_session, attrs)
     |> Repo.update()
+  end
+
+  # Member
+
+  def find_or_create_member(username) do
+    case get_member_by(username) do
+      nil -> create_member(%{username: username})
+      member -> {:ok, member}
+    end
+  end
+
+  def create_member(attrs) do
+    %Member{}
+    |> Member.create_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def get_member_by(username) do
+    Member
+    |> where(username: ^username)
+    |> Repo.one()
+  end
+
+  # Pomo Session Member
+
+  def build_pomo_session_member_attrs(
+        %Member{id: member_id},
+        %PomoSession{id: id, pomo_time: pomo_time},
+        goal \\ nil
+      ) do
+    %{
+      pomo_time: pomo_time,
+      goal: goal,
+      member_id: member_id,
+      pomo_session_id: id
+    }
+  end
+
+  def create_pomo_session_member(attrs) do
+    %PomoSessionMember{}
+    |> PomoSessionMember.create_changeset(attrs)
+    |> Repo.insert()
   end
 end

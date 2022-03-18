@@ -14,29 +14,14 @@ defmodule PomodoroAppBot.Bot do
     channel_user = Accounts.get_user_by_username(sender)
 
     case command do
-      "pomo" ->
-        case Pomos.get_active_pomo_for(channel_user.id) do
-          nil ->
-            say(sender, "There isnt a pomo currently active.")
-
-          pomo_session ->
-            remaining_minutes =
-              floor(PomoManagement.calculate_seconds_remaining(pomo_session) / 60)
-
-            say(
-              sender,
-              "There is #{remaining_minutes} minutes remaining in the pomo, you got this."
-            )
-        end
-
-      "pomostart" ->
+      "pomo start" ->
         if Pomos.pomo_active_for?(channel_user) do
-          say(sender, "You already have a pomodoro running!")
+          say(sender, "You already have a pomo running!")
         else
           PomoManagement.start_session(channel_user, sender)
         end
 
-      "pomoend" ->
+      "pomo end" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
           nil ->
             say(sender, "There is no active pomo, !pomostart to begin the next one.")
@@ -45,7 +30,7 @@ defmodule PomodoroAppBot.Bot do
             PomoManagement.end_session(pomo_session, sender)
         end
 
-      "pomobreak " <> breaktime ->
+      "pomo break " <> breaktime ->
         case Integer.parse(breaktime) do
           :error ->
             say(sender, "Invalid break time provided.")
@@ -60,7 +45,7 @@ defmodule PomodoroAppBot.Bot do
             end
         end
 
-      "pomotime " <> pomotime ->
+      "pomo time " <> pomotime ->
         case Integer.parse(pomotime) do
           :error ->
             say(sender, "Invalid pomo time provided.")
