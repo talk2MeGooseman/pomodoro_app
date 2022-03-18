@@ -3,8 +3,8 @@ defmodule PomodoroAppBot.Bot do
 
   require Logger
   alias PomodoroAppWeb.Presence
-  alias PomodoroApp.Accounts
-  alias PomodoroApp.Pomos
+  alias PomodoroApp.{Accounts, Pomos}
+  alias PomodoroAppBot.Commands
 
   @reminder_threshold_seconds 5 * 60
 
@@ -42,7 +42,7 @@ defmodule PomodoroAppBot.Bot do
           pomo_session ->
             case Pomos.update_pomo_session(pomo_session, %{active: false}) do
               {:ok, _pomo_session} ->
-                clean_up_presence(sender)
+                Presence.clean_up_pomo_presence(sender)
 
                 say(sender, "Pomodoro ended!")
 
@@ -71,9 +71,9 @@ defmodule PomodoroAppBot.Bot do
           :error ->
             say(sender, "Invalid pomo time provided.")
 
-          value ->
-            case Accounts.update_user_pomo_time(channel_user, value) do
-              {:error, _} ->
+          _ ->
+            case Accounts.update_user_pomo_time(channel_user, pomotime) do
+              {:error, _error} ->
                 say(sender, "Error updating pomo time.")
 
               {:ok, channel_user} ->
@@ -82,44 +82,53 @@ defmodule PomodoroAppBot.Bot do
         end
 
       _ ->
-        global_commands(channel_user, command, sender)
+        Commands.global(channel_user, command, sender)
     end
   end
 
   def handle_message("!" <> command, sender, "#" <> channel) do
     Accounts.get_user_by_username(channel)
-    |> global_commands(command, sender)
+    |> Commands.global(command, sender)
   end
 
   def handle_message(_message, sender, "#" <> channel) do
     channel_user = Accounts.get_user_by_username(channel)
 
     if Pomos.pomo_active_for?(channel_user) do
-      case Presence.get_by_key("channel:#{channel}", sender) do
-        [] ->
-          track_presence(channel, sender)
-          say(channel, "Shhhh @#{sender}, it's time to focus!")
-
-        %{
-          metas: [
-            %{
-              reminded_at: reminded_at
-            }
-          ]
-        } ->
-          if NaiveDateTime.diff(NaiveDateTime.utc_now(), reminded_at) >
-               @reminder_threshold_seconds do
-            track_presence(channel, sender)
-            say(channel, "Shhhh @#{sender}, it's time to focus!")
-          else
-            Logger.debug("Not reminding @#{sender} for channel #{channel}")
-          end
-      end
+      maybe_send_pomo_active_reminder(channel_user, sender)
     end
   end
 
+  defp maybe_send_pomo_active_reminder(channel, sender) do
+    case Presence.get_by_key("channel:#{channel}", sender) do
+      [] ->
+        send_pomo_active_reminder(channel, sender)
+
+      %{
+        metas: [
+          %{
+            reminded_at: reminded_at
+          }
+        ]
+      } ->
+        if remind_user?(reminded_at) do
+          send_pomo_active_reminder(channel, sender)
+        end
+    end
+  end
+
+  defp remind_user?(reminded_at) do
+    NaiveDateTime.diff(NaiveDateTime.utc_now(), reminded_at) >
+      @reminder_threshold_seconds
+  end
+
+  defp send_pomo_active_reminder(channel, sender) do
+    Presence.track_pomo_presence(channel, sender)
+    say(channel, "Shhhh @#{sender}, it's time to focus!")
+  end
+
   defp start_pomo_session(user, channel) do
-    pomo_session_attrs(user)
+    Pomos.build_pomo_session_attrs(user)
     |> Pomos.create_pomo_session()
     |> case do
       {:ok, pomo_session} ->
@@ -132,33 +141,8 @@ defmodule PomodoroAppBot.Bot do
         )
 
       {:error, _error} ->
-        say(channel, "Something went wrong!")
+        say(channel, "Opps, something went wrong starting the pomo session!")
     end
-  end
-
-  defp global_commands(channel_user, command, sender) do
-    case command do
-      "pomotime" ->
-        say(
-          sender,
-          "@#{sender} Pomo session time is currently set to #{channel_user.pomo_time} minutes."
-        )
-
-      "pomobreak" ->
-        say(sender, "@#{sender} Pomo break time is #{channel_user.break_time} minutes.")
-    end
-  end
-
-  defp pomo_session_attrs(user) do
-    start_on = NaiveDateTime.utc_now()
-    end_on = NaiveDateTime.add(start_on, user.pomo_time * 60)
-
-    %{
-      user_id: user.id,
-      pomo_time: user.pomo_time,
-      start: start_on,
-      end: end_on
-    }
   end
 
   defp calculate_seconds_remaining(%Pomos.PomoSession{end: end_on}) do
@@ -169,28 +153,5 @@ defmodule PomodoroAppBot.Bot do
     %{user_id: user_id, channel: channel}
     |> PomodoroApp.Workers.EndPomo.new(schedule_in: seconds_delay)
     |> Oban.insert()
-  end
-
-  defp track_presence(channel, sender) do
-    case Presence.get_by_key("channel:#{channel}", sender) do
-      [] ->
-        Presence.track(self(), "channel:#{channel}", sender, %{
-          reminded_at: NaiveDateTime.utc_now()
-        })
-
-      presence when is_map(presence) ->
-        Presence.update(self(), "channel:#{channel}", sender, %{
-          reminded_at: NaiveDateTime.utc_now()
-        })
-
-      _ ->
-        Logger.error("Could not track presence for #{sender} in #{channel}")
-    end
-  end
-
-  defp clean_up_presence(channel) do
-    Presence.list("channel:#{channel}")
-    |> Map.keys()
-    |> Enum.each(fn x -> Presence.untrack(self(), "channel:#{channel}", x) end)
   end
 end

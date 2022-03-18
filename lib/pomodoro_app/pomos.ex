@@ -5,8 +5,20 @@ defmodule PomodoroApp.Pomos do
 
   import Ecto.Query, warn: false
   alias PomodoroApp.Repo
-
+  alias PomodoroApp.Accounts.User
   alias PomodoroApp.Pomos.{PomoSession}
+
+  def build_pomo_session_attrs(%User{id: id, pomo_time: pomo_time}) do
+    start_on = NaiveDateTime.utc_now()
+    end_on = NaiveDateTime.add(start_on, pomo_time * 60)
+
+    %{
+      user_id: id,
+      pomo_time: pomo_time,
+      start: start_on,
+      end: end_on
+    }
+  end
 
   def get_pomo_session_by_user_id(id) do
     Repo.get_by(PomoSession, user_id: id)

@@ -19,7 +19,7 @@ defmodule PomodoroApp.Workers.EndPomo do
             Bot.say(channel, "Something went wrong!")
         end
       _ ->
-        Logger.info("No active pomo session found for user #{user_id}. No nothing")
+        Logger.debug("No active pomo session found for user #{user_id}. No nothing")
     end
 
     :ok
