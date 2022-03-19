@@ -25,7 +25,8 @@ config :pomodoro_app, PomodoroAppWeb.Endpoint,
   secret_key_base: "PZqWU12HxnOO1aPUBfA9PwCrM15ZH7P5sGQqbrQqICa/nnfMqy4vkb7tzAMGyt7E",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    esbuild: {Esbuild, :install_and_run, [:catalogue, ~w(--sourcemap=inline --watch)]}
   ]
 
 # ## SSL Support
@@ -54,12 +55,14 @@ config :pomodoro_app, PomodoroAppWeb.Endpoint,
 
 # Watch static and templates for browser reloading.
 config :pomodoro_app, PomodoroAppWeb.Endpoint,
+  reloadable_compilers: [:gettext, :elixir, :surface],
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/pomodoro_app_web/(live|views)/.*(ex)$",
-      ~r"lib/pomodoro_app_web/templates/.*(eex)$"
+      ~r"lib/pomodoro_app_web/(live|views|components)/.*(ex|sface|js)$",
+      ~r"lib/pomodoro_app_web/templates/.*(eex)$",
+      ~r"priv/catalogue/.*(ex)$"
     ]
   ]
 

@@ -91,7 +91,9 @@ defmodule PomodoroAppWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
     user = user_token && Accounts.get_user_by_session_token(user_token)
-    assign(conn, :current_user, user)
+
+    conn
+    |> assign(:current_user, user)
   end
 
   def fetch_token_current_user(token) do
@@ -140,6 +142,15 @@ defmodule PomodoroAppWeb.UserAuth do
       |> maybe_store_return_to()
       |> redirect(to: Routes.user_session_path(conn, :new))
       |> halt()
+    end
+  end
+
+  def put_user_token(conn, _) do
+    if current_user = conn.assigns[:current_user] do
+      token = Phoenix.Token.sign(conn, "user socket", current_user.id)
+      assign(conn, :user_token, token)
+    else
+      conn
     end
   end
 

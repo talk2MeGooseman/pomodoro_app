@@ -1,6 +1,8 @@
 defmodule PomodoroAppWeb.Router do
   use PomodoroAppWeb, :router
 
+  import Surface.Catalogue.Router
+
   import PomodoroAppWeb.UserAuth
 
   pipeline :browser do
@@ -12,6 +14,7 @@ defmodule PomodoroAppWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug :put_user_token
   end
 
   pipeline :api do
@@ -22,6 +25,7 @@ defmodule PomodoroAppWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    live "/demo", Demo
   end
 
   # Other scopes may use custom stacks.
@@ -99,5 +103,12 @@ defmodule PomodoroAppWeb.Router do
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
     post "/:provider/callback", AuthController, :callback
+  end
+
+  if Mix.env() == :dev do
+    scope "/" do
+      pipe_through :browser
+      surface_catalogue "/catalogue"
+    end
   end
 end

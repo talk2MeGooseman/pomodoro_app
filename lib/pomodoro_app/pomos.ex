@@ -46,11 +46,25 @@ defmodule PomodoroApp.Pomos do
     %PomoSession{}
     |> PomoSession.create_changeset(attrs)
     |> Repo.insert()
+    |> tap(fn {:ok, session} ->
+      Phoenix.PubSub.broadcast(
+        PomodoroApp.PubSub,
+        "overlay:#{session.user_id}",
+        {:created, session}
+      )
+    end)
   end
 
   def update_pomo_session(%PomoSession{} = pomo_session, attrs \\ %{}) do
     PomoSession.update_changeset(pomo_session, attrs)
     |> Repo.update()
+    |> tap(fn {:ok, session} ->
+      Phoenix.PubSub.broadcast(
+        PomodoroApp.PubSub,
+        "overlay:#{session.user_id}",
+        {:updated, session}
+      )
+    end)
   end
 
   # Member

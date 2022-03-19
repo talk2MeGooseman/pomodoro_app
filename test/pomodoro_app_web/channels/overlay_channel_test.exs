@@ -1,11 +1,11 @@
-defmodule PomodoroAppWeb.ChatterChannelTest do
+defmodule PomodoroAppWeb.OverlayChannelTest do
   use PomodoroAppWeb.ChannelCase
 
   setup do
     {:ok, _, socket} =
       PomodoroAppWeb.UserSocket
       |> socket("user_id", %{some: :assign})
-      |> subscribe_and_join(PomodoroAppWeb.ChatterChannel, "chatter:lobby")
+      |> subscribe_and_join(PomodoroAppWeb.OverlayChannel, "overlay:lobby")
 
     %{socket: socket}
   end
@@ -15,7 +15,7 @@ defmodule PomodoroAppWeb.ChatterChannelTest do
     assert_reply ref, :ok, %{"hello" => "there"}
   end
 
-  test "shout broadcasts to chatter:lobby", %{socket: socket} do
+  test "shout broadcasts to overlay:lobby", %{socket: socket} do
     push(socket, "shout", %{"hello" => "all"})
     assert_broadcast "shout", %{"hello" => "all"}
   end

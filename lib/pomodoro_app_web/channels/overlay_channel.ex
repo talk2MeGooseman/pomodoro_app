@@ -1,8 +1,8 @@
-defmodule PomodoroAppWeb.ChatterChannel do
+defmodule PomodoroAppWeb.OverlayChannel do
   use PomodoroAppWeb, :channel
 
   @impl true
-  def join("chatter:lobby", payload, socket) do
+  def join("overlay:" <> user_id, payload, socket) do
     if authorized?(payload) do
       {:ok, socket}
     else
@@ -18,7 +18,7 @@ defmodule PomodoroAppWeb.ChatterChannel do
   end
 
   # It is also common to receive messages from the client and
-  # broadcast to everyone in the current topic (chatter:lobby).
+  # broadcast to everyone in the current topic (overlay:lobby).
   @impl true
   def handle_in("shout", payload, socket) do
     broadcast(socket, "shout", payload)

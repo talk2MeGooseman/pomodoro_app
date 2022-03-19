@@ -1,6 +1,9 @@
 defmodule PomodoroAppWeb.UserSocket do
   use Phoenix.Socket
 
+  alias PomodoroAppWeb.UserAuth
+  alias PomodoroApp.Accounts.User
+
   # A Socket handler
   #
   # It's possible to control the websocket connection and
@@ -8,7 +11,7 @@ defmodule PomodoroAppWeb.UserSocket do
 
   ## Channels
 
-  channel "chatter:*", PomodoroAppWeb.ChatterChannel
+  channel "overlay:*", PomodoroAppWeb.OverlayChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -22,9 +25,15 @@ defmodule PomodoroAppWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case Phoenix.Token.verify(socket, "user socket", token, max_age: 1209600) do
+      {:ok, user_id} ->
+        {:ok, assign(socket, :current_user, user_id)}
+      {:error, _reason} ->
+        :error
+    end
   end
+
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

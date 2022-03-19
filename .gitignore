@@ -33,3 +33,6 @@ npm-debug.log
 /assets/node_modules/
 
 config/dev.secret.exs
+
+# Ignore generated js hook files for components
+assets/js/_hooks/
