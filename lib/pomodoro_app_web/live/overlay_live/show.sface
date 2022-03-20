@@ -1,9 +1,11 @@
 <Clock />
+
 {#if is_nil(@active_pomo) }
   <h2>Break Time</h2>
 {#else }
   <h2>Focus Time</h2>
-  { @active_pomo.start }
+  <h3 id="timer" :hook="Timer" data-start={@active_pomo.start} data-end={@active_pomo.end}></h3>
 {/if}
-
-Pomo Count: { Enum.count(@past_pomo_sessions) }
+<div>
+  Pomo Count: { Enum.count(@past_pomo_sessions) }
+</div>

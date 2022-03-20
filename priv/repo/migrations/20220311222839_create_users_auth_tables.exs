@@ -34,8 +34,8 @@ defmodule PomodoroApp.Repo.Migrations.CreateUsersAuthTables do
 
     create table(:pomo_sessions) do
       add :user_id, references(:users, on_delete: :delete_all), null: false
-      add :start, :naive_datetime
-      add :end, :naive_datetime
+      add :start, :utc_datetime
+      add :end, :utc_datetime
       add :pomo_time, :integer, null: false
       add :active, :boolean, null: false, default: true
 

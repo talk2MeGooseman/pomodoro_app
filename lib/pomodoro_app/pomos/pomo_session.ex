@@ -3,8 +3,8 @@ defmodule PomodoroApp.Pomos.PomoSession do
   import Ecto.Changeset
 
   schema "pomo_sessions" do
-    field :start, :naive_datetime
-    field :end, :naive_datetime
+    field :start, :utc_datetime
+    field :end, :utc_datetime
     field :pomo_time, :integer
     field :active, :boolean
     belongs_to :user, PomodoroApp.Accounts.User

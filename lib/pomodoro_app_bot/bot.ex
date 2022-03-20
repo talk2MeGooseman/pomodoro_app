@@ -8,6 +8,7 @@ defmodule PomodoroAppBot.Bot do
   alias PomodoroAppBot.{Commands, PomoManagement}
 
   @reminder_threshold_seconds 5 * 60
+  @allow_list ["steamelements", "talk2megooseman", "gooseman_bot"]
 
   @impl TMI.Handler
   def handle_message("!" <> command, sender, "#" <> sender) do
@@ -90,11 +91,14 @@ defmodule PomodoroAppBot.Bot do
   end
 
   defp remind_user?(reminded_at) do
-    NaiveDateTime.diff(NaiveDateTime.utc_now(), reminded_at) >
+    DateTime.diff(DateTime.utc_now(), reminded_at) >
       @reminder_threshold_seconds
   end
 
-  defp send_pomo_active_reminder(channel, sender) when is_binary(channel) and is_binary(sender) do
+  defp send_pomo_active_reminder(_channel, sender) when sender in @allow_list, do: nil
+
+  defp send_pomo_active_reminder(channel, sender)
+       when is_binary(channel) and is_binary(sender) and sender not in @allow_list do
     Presence.track_pomo_presence(channel, sender)
     say(channel, "Shhhh @#{sender}, it's time to focus!")
   end

@@ -9,8 +9,8 @@ defmodule PomodoroApp.Pomos do
   alias PomodoroApp.Pomos.{PomoSession, Member, PomoSessionMember}
 
   def build_pomo_session_attrs(%User{id: id, pomo_time: pomo_time}) do
-    start_on = NaiveDateTime.utc_now()
-    end_on = NaiveDateTime.add(start_on, pomo_time * 60)
+    start_on = DateTime.utc_now()
+    end_on = DateTime.add(start_on, pomo_time * 60)
 
     %{
       user_id: id,
