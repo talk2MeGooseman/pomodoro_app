@@ -1,0 +1,9 @@
+<Clock />
+{#if is_nil(@active_pomo) }
+  <h2>Break Time</h2>
+{#else }
+  <h2>Focus Time</h2>
+  { @active_pomo.start }
+{/if}
+
+Pomo Count: { Enum.count(@past_pomo_sessions) }

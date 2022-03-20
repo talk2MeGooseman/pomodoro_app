@@ -83,8 +83,7 @@ defmodule PomodoroAppWeb.Router do
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
 
-    live "/dashboard", UserLive.Show, :show
-    live "/users/:id/show/edit", UserLive.Show, :edit
+    live "/overlay", OverlayLive.Show, :show
   end
 
   scope "/", PomodoroAppWeb do

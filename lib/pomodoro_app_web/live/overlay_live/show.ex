@@ -1,8 +1,12 @@
-defmodule PomodoroAppWeb.UserLive.Show do
-  use PomodoroAppWeb, :live_view
+defmodule PomodoroAppWeb.OverlayLive.Show do
+  use Surface.LiveView
   on_mount PomodoroAppWeb.UserLiveAuth
 
   alias PomodoroApp.{Accounts, Pomos}
+  alias PomodoroAppWeb.Components.Clock
+
+  data active_pomo, :struct, default: nil
+  data past_pomo_sessions, :list, default: []
 
   @impl true
   def mount(_params, session, socket) do
@@ -27,9 +31,10 @@ defmodule PomodoroAppWeb.UserLive.Show do
 
   @impl true
   def handle_info({:updated, session}, socket) do
-    socket
+    socket = socket
     |> assign(:active_pomo, nil)
-    |> update(:session, fn pomos -> [session | pomos] end)
+    |> update(:past_pomo_sessions, fn pomos -> [session | pomos] end)
+
     {:noreply, socket}
   end
 
