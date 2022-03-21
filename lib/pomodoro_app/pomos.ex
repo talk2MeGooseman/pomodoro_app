@@ -6,7 +6,7 @@ defmodule PomodoroApp.Pomos do
   import Ecto.Query, warn: false
   alias PomodoroApp.Repo
   alias PomodoroApp.Accounts.User
-  alias PomodoroApp.Pomos.{PomoSession, Member, PomoSessionMember}
+  alias PomodoroApp.Pomos.{PomoSession, Member, PomoSessionMember, PomosQueries}
 
   def build_pomo_session_attrs(%User{id: id, pomo_time: pomo_time}) do
     start_on = DateTime.utc_now()
@@ -50,6 +50,13 @@ defmodule PomodoroApp.Pomos do
     select: p
   end
 
+  def pomo_session_members(%PomoSession{id: id}) do
+    PomosQueries.sessions_with_id(id)
+    |> PomosQueries.sessions_joined_members()
+    |> select([session, member], member)
+    |> Repo.all()
+  end
+
   def create_pomo_session(attrs) do
     %PomoSession{}
     |> PomoSession.create_changeset(attrs)
@@ -90,10 +97,24 @@ defmodule PomodoroApp.Pomos do
     |> Repo.insert()
   end
 
-  def get_member_by(username) do
+  def get_member_by(username) when is_binary(username) do
     Member
     |> where(username: ^username)
     |> Repo.one()
+  end
+
+  def member_previous_sessions(username) when is_binary(username) do
+    PomosQueries.member_with_username(username)
+    |> PomosQueries.members_joined_completed_sessions()
+    |> select([member, session], session)
+    |> Repo.all()
+  end
+
+  def member_previous_sessions_since(username, %DateTime{} = datetime) when is_binary(username) do
+    PomosQueries.member_with_username(username)
+    |> PomosQueries.members_joined_completed_sessions_since(datetime)
+    |> select([member, session], session)
+    |> Repo.all()
   end
 
   # Pomo Session Member

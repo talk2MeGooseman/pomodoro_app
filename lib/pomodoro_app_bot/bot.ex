@@ -58,6 +58,8 @@ defmodule PomodoroAppBot.Bot do
       _ ->
         Commands.global(channel_user, command, sender)
     end
+  rescue
+    _ -> Logger.warn("Error occurred")
   end
 
   def handle_message("!" <> command, sender, "#" <> channel) do

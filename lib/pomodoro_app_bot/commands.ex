@@ -3,6 +3,8 @@ defmodule PomodoroAppBot.Commands do
   alias PomodoroApp.Pomos
   alias PomodoroAppBot.{Bot, PomoManagement}
 
+  @one_day_ago_in_seconds 24 * 60 * 60
+
   def global(channel_user, command, sender) do
     case command do
       "pomo" ->
@@ -48,6 +50,46 @@ defmodule PomodoroAppBot.Commands do
             else
               _ -> Bot.say(channel_user.username, "Error joining pomo.")
             end
+        end
+
+      "pomo stats" ->
+        case Pomos.get_member_by(sender) do
+          %Pomos.Member{} = member ->
+            Pomos.member_previous_sessions(member.username)
+            |> Enum.reject(&is_nil(&1))
+            |> Enum.reduce(%{count: 0, total_time: 0}, fn s, acc ->
+              %{count: acc.count + 1, total_time: acc.total_time + s.pomo_time}
+            end)
+            |> then(fn %{count: count, total_time: total_time} ->
+              Bot.say(
+                channel_user.username,
+                "@#{sender} you have completed #{count} pomos, for a total of #{total_time} minutes."
+              )
+            end)
+
+          nil ->
+            Bot.say(channel_user.username, "@#{sender} you haven't completed any pomos yet.")
+        end
+
+      "pomo today" ->
+        case Pomos.get_member_by(sender) do
+          %Pomos.Member{} = member ->
+            datetime = DateTime.add(DateTime.utc_now(), -@one_day_ago_in_seconds)
+
+            Pomos.member_previous_sessions_since(member.username, datetime)
+            |> Enum.reject(&is_nil(&1))
+            |> Enum.reduce(%{count: 0, total_time: 0}, fn s, acc ->
+              %{count: acc.count + 1, total_time: acc.total_time + s.pomo_time}
+            end)
+            |> then(fn %{count: count, total_time: total_time} ->
+              Bot.say(
+                channel_user.username,
+                "@#{sender} Today you have completed #{count} pomos, for a total of #{total_time} minutes."
+              )
+            end)
+
+          nil ->
+            Bot.say(channel_user.username, "@#{sender} you haven't completed any pomos yet.")
         end
 
       _ ->
