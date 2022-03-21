@@ -42,6 +42,14 @@ defmodule PomodoroApp.Pomos do
     |> Repo.exists?()
   end
 
+  def pomo_sessions_since(%DateTime{} = time, user_id) when is_integer(user_id) do
+    Repo.all from p in PomoSession,
+    where: p.start >= ^time,
+    where: p.active == false,
+    where: p.user_id == ^user_id,
+    select: p
+  end
+
   def create_pomo_session(attrs) do
     %PomoSession{}
     |> PomoSession.create_changeset(attrs)

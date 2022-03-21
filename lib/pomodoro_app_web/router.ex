@@ -21,6 +21,10 @@ defmodule PomodoroAppWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :overlays do
+    plug :put_root_layout, {PomodoroAppWeb.LayoutView, :overlay_root}
+  end
+
   scope "/", PomodoroAppWeb do
     pipe_through :browser
 
@@ -28,10 +32,6 @@ defmodule PomodoroAppWeb.Router do
     live "/demo", Demo
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", PomodoroAppWeb do
-  #   pipe_through :api
-  # end
 
   # Enables LiveDashboard only for development
   #
@@ -82,8 +82,6 @@ defmodule PomodoroAppWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
     get "/users/settings/confirm_email/:token", UserSettingsController, :confirm_email
-
-    live "/overlay", OverlayLive.Show, :show
   end
 
   scope "/", PomodoroAppWeb do
@@ -102,6 +100,12 @@ defmodule PomodoroAppWeb.Router do
     get "/:provider", AuthController, :request
     get "/:provider/callback", AuthController, :callback
     post "/:provider/callback", AuthController, :callback
+  end
+
+  scope "/", PomodoroAppWeb do
+    pipe_through [:browser, :overlays]
+
+    live "/overlay", OverlayLive.Show, :show
   end
 
   if Mix.env() == :dev do

@@ -13,6 +13,9 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
     user_id = socket.assigns.current_user.id
     if connected?(socket), do: Phoenix.PubSub.subscribe(PomodoroApp.PubSub, "overlay:#{user_id}")
 
+    sessions = past_pomo_sessions(user_id)
+
+    socket = assign(socket, :past_pomo_sessions, sessions)
     {:ok, assign(socket, :active_pomo, get_active_pomo(user_id))}
   end
 
@@ -31,9 +34,10 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
 
   @impl true
   def handle_info({:updated, session}, socket) do
-    socket = socket
-    |> assign(:active_pomo, nil)
-    |> update(:past_pomo_sessions, fn pomos -> [session | pomos] end)
+    socket =
+      socket
+      |> assign(:active_pomo, nil)
+      |> update(:past_pomo_sessions, fn pomos -> [session | pomos] end)
 
     {:noreply, socket}
   end
@@ -43,5 +47,10 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
 
   def get_active_pomo(user_id) do
     Pomos.get_active_pomo_for(user_id)
+  end
+
+  def past_pomo_sessions(user_id) do
+    DateTime.add(DateTime.utc_now(), -86400)
+    |> PomodoroApp.Pomos.pomo_sessions_since(user_id)
   end
 end
