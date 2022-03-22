@@ -60,7 +60,7 @@ config :pomodoro_app,
   bots: [
     [
       bot: PomodoroAppBot.Bot,
-      user: "talk2megooseman",
+      user: "gooseman_bot",
       pass: System.fetch_env("POMODORO_APP_BOT_SECRET"),
       channels: ["talk2megooseman"],
       debug: false

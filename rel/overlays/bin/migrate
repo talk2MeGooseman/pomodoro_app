@@ -1,0 +1,3 @@
+#!/bin/sh
+cd -P -- "$(dirname -- "$0")"
+exec ./pomodoro_app eval PomodoroApp.Release.migrate

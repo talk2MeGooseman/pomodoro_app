@@ -1,0 +1,1 @@
+call "%~dp0\pomodoro_app" eval PomodoroApp.Release.migrate
