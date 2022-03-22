@@ -39,40 +39,24 @@ defmodule PomodoroApp.Pomos.PomosQueries do
     |> where([member], member.username == ^username)
   end
 
-  def members_joined_completed_sessions(query \\ member_base()) do
-    query
-    |> join(:left, [member], session in assoc(member, :pomo_sessions), on: session.active == false)
-  end
-
-  def members_joined_completed_sessions_since(query \\ member_base(), %DateTime{} = datetime) do
+  def members_joined_completed_channel_sessions(query \\ member_base(), user_id) do
     query
     |> join(:left, [member], session in assoc(member, :pomo_sessions),
-      on: session.active == false and session.start >= ^datetime
+      on: session.active == false and session.user_id == ^user_id
     )
   end
 
-  # def query_users_with_settings() do
-  #   query =
-  #     from(u in User,
-  #       join: ss in StreamSettings,
-  #       on: ss.user_id == u.id,
-  #       select: %{id: u.id}
-  #     )
-
-  #   query
-  # end
-
-  # def get_users_without_settings() do
-  #   query =
-  #     from(u in User,
-  #       left_join: ss in StreamSettings,
-  #       on: ss.user_id == u.id,
-  #       where: is_nil(ss.user_id),
-  #       select: u.id
-  #     )
-
-  #   Repo.all(query)
-  # end
+  def members_joined_completed_channel_sessions_since(
+        query \\ member_base(),
+        %DateTime{} = datetime,
+        user_id
+      )
+      when is_binary(user_id) or is_integer(user_id) do
+    query
+    |> join(:left, [member], session in assoc(member, :pomo_sessions),
+      on: session.active == false and session.start >= ^datetime and session.user_id == ^user_id
+    )
+  end
 
   defp session_base do
     from(_ in PomoSession, as: :session)

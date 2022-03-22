@@ -1,6 +1,5 @@
 defmodule PomodoroAppWeb.OverlayLive.Show do
   use Surface.LiveView
-  on_mount PomodoroAppWeb.UserLiveAuth
 
   alias PomodoroApp.{Accounts, Pomos}
   alias PomodoroAppWeb.Components.Clock
@@ -9,8 +8,7 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
   data past_pomo_sessions, :list, default: []
 
   @impl true
-  def mount(_params, session, socket) do
-    user_id = socket.assigns.current_user.id
+  def mount(%{ "id" => user_id}, session, socket) do
     if connected?(socket), do: Phoenix.PubSub.subscribe(PomodoroApp.PubSub, "overlay:#{user_id}")
 
     sessions = past_pomo_sessions(user_id)
@@ -42,15 +40,14 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
     {:noreply, socket}
   end
 
-  defp page_title(:show), do: "Show User"
-  defp page_title(:edit), do: "Edit User"
+  defp page_title(_), do: ""
 
   def get_active_pomo(user_id) do
     Pomos.get_active_pomo_for(user_id)
   end
 
   def past_pomo_sessions(user_id) do
-    DateTime.add(DateTime.utc_now(), -86400)
+    DateTime.add(DateTime.utc_now(), -(18 * 60 * 60))
     |> PomodoroApp.Pomos.pomo_sessions_since(user_id)
   end
 end

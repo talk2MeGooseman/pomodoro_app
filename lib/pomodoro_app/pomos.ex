@@ -42,12 +42,15 @@ defmodule PomodoroApp.Pomos do
     |> Repo.exists?()
   end
 
-  def pomo_sessions_since(%DateTime{} = time, user_id) when is_integer(user_id) do
-    Repo.all from p in PomoSession,
-    where: p.start >= ^time,
-    where: p.active == false,
-    where: p.user_id == ^user_id,
-    select: p
+  def pomo_sessions_since(%DateTime{} = time, user_id)
+      when is_integer(user_id) or is_binary(user_id) do
+    Repo.all(
+      from p in PomoSession,
+        where: p.start >= ^time,
+        where: p.active == false,
+        where: p.user_id == ^user_id,
+        select: p
+    )
   end
 
   def pomo_session_members(%PomoSession{id: id}) do
@@ -103,17 +106,19 @@ defmodule PomodoroApp.Pomos do
     |> Repo.one()
   end
 
-  def member_previous_sessions(username) when is_binary(username) do
+  def member_previous_channel_sessions(username, user_id)
+      when is_binary(username) and (is_integer(user_id) or is_binary(user_id)) do
     PomosQueries.member_with_username(username)
-    |> PomosQueries.members_joined_completed_sessions()
-    |> select([member, session], session)
+    |> PomosQueries.members_joined_completed_channel_sessions(user_id)
+    |> select([member, session, session_member], session_member)
     |> Repo.all()
   end
 
-  def member_previous_sessions_since(username, %DateTime{} = datetime) when is_binary(username) do
+  def member_previous_channel_sessions_since(username, %DateTime{} = datetime, user_id)
+      when is_binary(username) and (is_integer(user_id) or is_binary(user_id)) do
     PomosQueries.member_with_username(username)
-    |> PomosQueries.members_joined_completed_sessions_since(datetime)
-    |> select([member, session], session)
+    |> PomosQueries.members_joined_completed_channel_sessions_since(datetime, user_id)
+    |> select([member, session, session_member], session_member)
     |> Repo.all()
   end
 
@@ -121,11 +126,13 @@ defmodule PomodoroApp.Pomos do
 
   def build_pomo_session_member_attrs(
         %Member{id: member_id},
-        %PomoSession{id: id, pomo_time: pomo_time},
+        %PomoSession{id: id, end: end_on},
         goal \\ nil
       ) do
+
+    time_remaining_in_minutes = DateTime.diff(end_on, DateTime.utc_now()) / 60
     %{
-      pomo_time: pomo_time,
+      pomo_time: floor(time_remaining_in_minutes),
       goal: goal,
       member_id: member_id,
       pomo_session_id: id

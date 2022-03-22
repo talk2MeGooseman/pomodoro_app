@@ -8,7 +8,15 @@ defmodule PomodoroAppBot.Bot do
   alias PomodoroAppBot.{Commands, PomoManagement}
 
   @reminder_threshold_seconds 5 * 60
-  @allow_list ["steamelements", "talk2megooseman", "gooseman_bot"]
+  @allow_list ["streamelements", "talk2megooseman", "gooseman_bot"]
+  @commands [
+    "!pomo start - starts a pomo session.",
+    "!pomo end - ends a pomo session.",
+    "!pomo break <breaktime> - sets the break time.",
+    "!pomo time <pomotime> - sets the pomo time.",
+    "!pomo stats - shows your pomo stats.",
+    "!pomo today - shows your pomo stats for past 24 hours."
+  ]
 
   @impl TMI.Handler
   def handle_message("!" <> command, sender, "#" <> sender) do
@@ -54,6 +62,12 @@ defmodule PomodoroAppBot.Bot do
           _ ->
             PomoManagement.update_timer(channel_user, pomotime)
         end
+
+      "pomo help" ->
+        say(
+          channel_user.username,
+          "@#{sender} #{Enum.join(@commands, " ")}"
+        )
 
       _ ->
         Commands.global(channel_user, command, sender)

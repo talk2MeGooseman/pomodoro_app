@@ -105,7 +105,7 @@ defmodule PomodoroAppWeb.Router do
   scope "/", PomodoroAppWeb do
     pipe_through [:browser, :overlays]
 
-    live "/overlay", OverlayLive.Show, :show
+    live "/overlay/:id", OverlayLive.Show, :show
   end
 
   if Mix.env() == :dev do

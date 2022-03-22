@@ -15,12 +15,12 @@ defmodule PomodoroAppWeb.Presence do
     case get_by_key("channel:#{channel}", sender) do
       [] ->
         track(self(), "channel:#{channel}", sender, %{
-          reminded_at: NaiveDateTime.utc_now()
+          reminded_at: DateTime.utc_now()
         })
 
       presence when is_map(presence) ->
         update(self(), "channel:#{channel}", sender, %{
-          reminded_at: NaiveDateTime.utc_now()
+          reminded_at: DateTime.utc_now()
         })
 
       _ ->
@@ -29,8 +29,6 @@ defmodule PomodoroAppWeb.Presence do
   end
 
   def clean_up_pomo_presence(channel, pid \\ self()) do
-    IO.inspect(self())
-
     list("channel:#{channel}")
     |> Map.keys()
     |> Enum.each(fn x -> untrack(pid, "channel:#{channel}", x) end)
