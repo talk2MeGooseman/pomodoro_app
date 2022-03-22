@@ -5,80 +5,22 @@ defmodule PomodoroAppBot.Bot do
   alias PomodoroAppWeb.Presence
   alias PomodoroApp.{Accounts, Pomos}
   alias PomodoroApp.Accounts.User
-  alias PomodoroAppBot.{Commands, PomoManagement}
+  alias PomodoroAppBot.Commands.{Global, Streamer}
 
   @reminder_threshold_seconds 5 * 60
   @allow_list ["streamelements", "talk2megooseman", "gooseman_bot"]
-  @commands [
-    "!pomo start - starts a pomo session.",
-    "!pomo end - ends a pomo session.",
-    "!pomo break <breaktime> - sets the break time.",
-    "!pomo time <pomotime> - sets the pomo time.",
-    "!pomo stats - shows your pomo stats.",
-    "!pomo today - shows your pomo stats for past 24 hours."
-  ]
 
   @impl TMI.Handler
   def handle_message("!" <> command, sender, "#" <> sender) do
     channel_user = Accounts.get_user_by_username(sender)
-
-    case command do
-      "pomo start" ->
-        if Pomos.pomo_active_for?(channel_user) do
-          say(sender, "You already have a pomo running!")
-        else
-          PomoManagement.start_session(channel_user, sender)
-        end
-
-      "pomo end" ->
-        case Pomos.get_active_pomo_for(channel_user.id) do
-          nil ->
-            say(sender, "There is no active pomo, !pomostart to begin the next one.")
-
-          pomo_session ->
-            PomoManagement.end_session(pomo_session, sender)
-        end
-
-      "pomo break " <> breaktime ->
-        case Integer.parse(breaktime) do
-          :error ->
-            say(sender, "Invalid break time provided.")
-
-          _ ->
-            case Accounts.update_user_break_time(channel_user, breaktime) do
-              {:error, _} ->
-                say(sender, "Error updating break time.")
-
-              {:ok, channel_user} ->
-                say(sender, "Break time updated to #{channel_user.break_time} minutes.")
-            end
-        end
-
-      "pomo time " <> pomotime ->
-        case Integer.parse(pomotime) do
-          :error ->
-            say(sender, "Invalid pomo time provided.")
-
-          _ ->
-            PomoManagement.update_timer(channel_user, pomotime)
-        end
-
-      "pomo help" ->
-        say(
-          channel_user.username,
-          "@#{sender} #{Enum.join(@commands, " ")}"
-        )
-
-      _ ->
-        Commands.global(channel_user, command, sender)
-    end
+    Streamer.command(channel_user, command, sender)
   rescue
     _ -> Logger.warn("Error occurred")
   end
 
   def handle_message("!" <> command, sender, "#" <> channel) do
-    Accounts.get_user_by_username(channel)
-    |> Commands.global(command, sender)
+    channel_user = Accounts.get_user_by_username(channel)
+    Global.command(channel_user, command, sender)
   end
 
   def handle_message(_message, sender, "#" <> channel) do

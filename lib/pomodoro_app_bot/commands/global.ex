@@ -1,6 +1,7 @@
-defmodule PomodoroAppBot.Commands do
+defmodule PomodoroAppBot.Commands.Global do
   require Logger
   alias PomodoroApp.Pomos
+  alias PomodoroApp.Accounts.User
   alias PomodoroAppBot.{Bot, PomoManagement}
 
   @one_day_ago_in_seconds 24 * 60 * 60
@@ -11,8 +12,8 @@ defmodule PomodoroAppBot.Commands do
     "!pomo today - See stats for all your pomos in the last 24 hours."
   ]
 
-  def global(channel_user, command, sender) do
-    case command do
+  def command(%User{} = channel_user, action, sender) do
+    case action do
       "pomo" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
           nil ->
@@ -97,7 +98,7 @@ defmodule PomodoroAppBot.Commands do
         )
 
       _ ->
-        Logger.warn("Unknown command: #{command}")
+        Logger.warn("Unknown command: #{action}")
     end
   rescue
     _ -> Logger.warn("Error occurred")

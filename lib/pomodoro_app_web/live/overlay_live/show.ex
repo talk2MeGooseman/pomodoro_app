@@ -4,15 +4,18 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
   alias PomodoroApp.{Accounts, Pomos}
   alias PomodoroAppWeb.Components.Clock
 
+  data user, :struct, default: nil
   data active_pomo, :struct, default: nil
   data past_pomo_sessions, :list, default: []
 
   @impl true
   def mount(%{ "id" => user_id}, session, socket) do
     if connected?(socket), do: Phoenix.PubSub.subscribe(PomodoroApp.PubSub, "overlay:#{user_id}")
+    user = Accounts.get_user!(user_id)
 
     sessions = past_pomo_sessions(user_id)
 
+    socket = assign(socket, :user, user)
     socket = assign(socket, :past_pomo_sessions, sessions)
     {:ok, assign(socket, :active_pomo, get_active_pomo(user_id))}
   end

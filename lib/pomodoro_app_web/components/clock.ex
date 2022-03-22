@@ -7,7 +7,7 @@ defmodule PomodoroAppWeb.Components.Clock do
   def render(assigns) do
     ~F"""
     <section>
-      <h1 id="clock" :hook="Clock" phx-update="ignore">00:00</h1>
+      <h1 id="clock" :hook="Clock" phx-update="ignore">--:--</h1>
     </section>
     """
   end
