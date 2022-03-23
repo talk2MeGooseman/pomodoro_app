@@ -28,7 +28,7 @@ defmodule PomodoroAppBot.Commands.Streamer do
       "pomo end" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
           nil ->
-            Bot.say(sender, "There is no active pomo, !pomostart to begin the next one.")
+            Bot.say(sender, "There is no active pomo, '!pomo start' to begin the next one.")
 
           pomo_session ->
             PomoManagement.end_session(pomo_session, sender)

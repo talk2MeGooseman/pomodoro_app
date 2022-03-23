@@ -58,6 +58,6 @@ defmodule PomodoroAppBot.Bot do
   defp send_pomo_active_reminder(channel, sender)
        when is_binary(channel) and is_binary(sender) and sender not in @allow_list do
     Presence.track_pomo_presence(channel, sender)
-    say(channel, "Shhhh @#{sender}, it's time to focus!")
+    say(channel, "Shhhh @#{sender}, it's time to focus. Use '!pomo info' to get more information.")
   end
 end

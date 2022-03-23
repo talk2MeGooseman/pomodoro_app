@@ -9,7 +9,8 @@ defmodule PomodoroAppBot.Commands.Global do
     "!pomo - How much time is left.",
     "!pomo join - Join the pomo and begin tracking your stats.",
     "!pomo stats - See stats for all your previous pomos.",
-    "!pomo today - See stats for all your pomos in the last 24 hours."
+    "!pomo today - See stats for all your pomos in the last 24 hours.",
+    "!pomo info - Get info about what's happening."
   ]
 
   def command(%User{} = channel_user, action, sender) do
@@ -95,6 +96,12 @@ defmodule PomodoroAppBot.Commands.Global do
         Bot.say(
           channel_user.username,
           "@#{sender} #{Enum.join(@commands, " ")}"
+        )
+
+      "pomo info" ->
+        Bot.say(
+          channel_user.username,
+          "@#{sender} Welcome to the co-working stream pull up a chair and chill out to the music. During a pomo session we all focus on a task till the timer is done. After the pomo is over we will take a break for a few minutes and chat and catch up and then start the next pomo."
         )
 
       _ ->

@@ -17,7 +17,12 @@ defmodule PomodoroAppBot.PomoManagement do
 
         Bot.say(
           channel,
-          "Pomodoro started, time to focus for the next #{pomo_session.pomo_time} minutes!"
+          "Let's do this, time to focus for the next #{pomo_session.pomo_time} minutes!"
+        )
+
+        Bot.say(
+          channel,
+          "If you would like to join in and track stats use '!pomo join' or '!pomo help' for more info."
         )
 
       {:error, _error} ->
@@ -41,7 +46,7 @@ defmodule PomodoroAppBot.PomoManagement do
   def end_session(%PomoSession{} = pomo_session, channel) do
     case Pomos.update_pomo_session(pomo_session, %{active: false}) do
       {:ok, _pomo_session} ->
-        Bot.say(channel, "Pomo has ended! Great job!")
+        Bot.say(channel, "Pomo has ended! Great job. Use '!pomo today' to see your stats.")
 
       {:error, _error} ->
         Bot.say(channel, "Uh oh, I had a problem ending the current pomo.")
