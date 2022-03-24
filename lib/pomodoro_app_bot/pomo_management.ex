@@ -1,7 +1,7 @@
 defmodule PomodoroAppBot.PomoManagement do
   require Logger
 
-  alias PomodoroApp.{Accounts, Pomos}
+  alias PomodoroApp.{Accounts, Pomos, Repo}
   alias PomodoroApp.Pomos.PomoSession
   alias PomodoroAppWeb.Presence
   alias PomodoroAppBot.Bot
@@ -45,7 +45,12 @@ defmodule PomodoroAppBot.PomoManagement do
 
   def end_session(%PomoSession{} = pomo_session, channel) do
     case Pomos.update_pomo_session(pomo_session, %{active: false}) do
-      {:ok, _pomo_session} ->
+      {:ok, updated_pomo_session} ->
+        updated_pomo_session = Repo.preload(updated_pomo_session, :user)
+        user = updated_pomo_session.user
+        scheduled_at = DateTime.add(DateTime.utc_now(), user.break_time * 60)
+
+        enqueue_pomo_break_time_reminder(user.id, channel, scheduled_at)
         Bot.say(channel, "Pomo has ended! Great job. Use '!pomo today' to see your stats.")
 
       {:error, _error} ->
@@ -74,6 +79,12 @@ defmodule PomodoroAppBot.PomoManagement do
   defp enqueue_pomo_timer(session_id, channel, seconds_delay) do
     %{session_id: session_id, channel: channel}
     |> PomodoroApp.Workers.EndPomo.new(schedule_in: seconds_delay)
+    |> Oban.insert()
+  end
+
+  defp enqueue_pomo_break_time_reminder(user_id, channel, %DateTime{} = scheduled_at) do
+    %{user_id: user_id, channel: channel}
+    |> PomodoroApp.Workers.BreakTimeOver.new(scheduled_at: scheduled_at)
     |> Oban.insert()
   end
 end

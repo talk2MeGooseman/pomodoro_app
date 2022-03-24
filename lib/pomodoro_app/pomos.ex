@@ -29,9 +29,8 @@ defmodule PomodoroApp.Pomos do
   end
 
   def get_active_pomo_for(user_id) do
-    PomoSession
-    |> where(user_id: ^user_id)
-    |> where(active: true)
+    PomosQueries.sessions_with_user_id(user_id)
+    |> PomosQueries.sessions_with_active(true)
     |> Repo.one()
   end
 

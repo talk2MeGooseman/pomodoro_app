@@ -24,7 +24,8 @@ defmodule PomodoroApp.Pomos.PomosQueries do
     |> where([session], session.start >= ^datetime)
   end
 
-  def sessions_with_user_id(query \\ session_base(), user_id) when is_binary(user_id) do
+  def sessions_with_user_id(query \\ session_base(), user_id)
+      when is_integer(user_id) or is_binary(user_id) do
     query
     |> where([session], session.user_id == ^user_id)
   end

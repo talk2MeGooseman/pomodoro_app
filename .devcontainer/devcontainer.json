@@ -11,7 +11,14 @@
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"jakebecker.elixir-ls"
+		"jakebecker.elixir-ls",
+		"RobbOwen.synthwave-vscode",
+		"mtxr.sqltools",
+		"ms-ossdata.vscode-postgresql",
+		"benvp.vscode-hex-pm-intellisense",
+		"eamodio.gitlens",
+		"GitHub.copilot",
+		"dbaeumer.vscode-eslint"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

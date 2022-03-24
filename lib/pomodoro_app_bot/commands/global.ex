@@ -1,7 +1,6 @@
 defmodule PomodoroAppBot.Commands.Global do
   require Logger
   alias PomodoroApp.Pomos
-  alias PomodoroApp.Pomos.PomoSession
   alias PomodoroApp.Accounts.User
   alias PomodoroAppBot.{Bot, PomoManagement}
 
@@ -14,7 +13,8 @@ defmodule PomodoroAppBot.Commands.Global do
     "!pomo info - Get info about what's happening."
   ]
 
-  def command(%User{} = channel_user, action, sender) do
+  def command(%User{} = channel_user, action, sender)
+      when is_binary(action) and is_binary(sender) do
     case action do
       "pomo" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
