@@ -39,20 +39,11 @@ defmodule PomodoroAppBot.Commands.Global do
 
       "pomo join" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
-          %PomoSession{} = pomo_session ->
-            with {:ok, member} <- Pomos.find_or_create_member(sender),
-                 attrs <- Pomos.build_pomo_session_member_attrs(member, pomo_session),
-                 {:ok, _session_member} <- Pomos.create_pomo_session_member(attrs) do
-              Bot.say(
-                channel_user.username,
-                "@#{sender} thanks for joining in, now it's time to focus."
-              )
-            else
-              _ -> Bot.say(channel_user.username, "Error joining pomo.")
-            end
-
           nil ->
             Bot.say(channel_user.username, "There isnt a pomo currently active.")
+
+          pomo_session ->
+            PomoManagement.join_session(pomo_session, channel_user.username, sender)
         end
 
       "pomo stats" ->
