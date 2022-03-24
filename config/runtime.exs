@@ -37,4 +37,20 @@ if config_env() == :prod do
     # IMPORTANT: Or it won't find the DB server
     socket_options: [:inet6],
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+
+  config :pomodoro_app,
+    bots: [
+      [
+        bot: PomodoroAppBot.Bot,
+        user: "gooseman_bot",
+        pass: System.get_env("POMODORO_APP_BOT_SECRET"),
+        channels: ["talk2megooseman"],
+        debug: false
+      ]
+    ]
+
+  config :ueberauth, Ueberauth.Strategy.Twitch.OAuth,
+    client_id: System.get_env("TWITCH_CLIENT_ID"),
+    client_secret: System.get_env("TWITCH_CLIENT_SECRET"),
+    redirect_uri: "#{app_name}.fly.dev/auth/twitch/callback"
 end
