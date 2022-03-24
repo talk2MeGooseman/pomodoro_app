@@ -1,7 +1,11 @@
 defmodule PomodoroAppBot.PomoManagement do
   require Logger
 
+  @reminder_threshold_seconds 10 * 60
+  @allow_list ["streamelements", "talk2megooseman", "gooseman_bot"]
+
   alias PomodoroApp.{Accounts, Pomos, Repo}
+  alias PomodoroApp.Accounts.User
   alias PomodoroApp.Pomos.PomoSession
   alias PomodoroAppWeb.Presence
   alias PomodoroAppBot.Bot
@@ -72,6 +76,13 @@ defmodule PomodoroAppBot.PomoManagement do
     end
   end
 
+  def handle_message(channel, sender) when is_binary(channel) and is_binary(sender) do
+    with %User{} = channel_user <- Accounts.get_user_by_username(channel),
+         true <- Pomos.pomo_active_for?(channel_user) do
+      maybe_send_pomo_active_reminder(channel_user, sender)
+    end
+  end
+
   def calculate_seconds_remaining(%Pomos.PomoSession{end: end_on}) do
     NaiveDateTime.diff(end_on, NaiveDateTime.utc_now())
   end
@@ -86,5 +97,36 @@ defmodule PomodoroAppBot.PomoManagement do
     %{user_id: user_id, channel: channel}
     |> PomodoroApp.Workers.BreakTimeOver.new(scheduled_at: scheduled_at)
     |> Oban.insert()
+  end
+
+  defp maybe_send_pomo_active_reminder(channel_user, sender) do
+    case Presence.get_by_key("channel:#{channel_user.username}", sender) do
+      [] ->
+        send_pomo_active_reminder(channel_user.username, sender)
+
+      %{
+        metas: [
+          %{
+            reminded_at: reminded_at
+          }
+        ]
+      } ->
+        if remind_user?(reminded_at) do
+          send_pomo_active_reminder(channel_user.username, sender)
+        end
+    end
+  end
+
+  defp remind_user?(reminded_at) do
+    DateTime.diff(DateTime.utc_now(), reminded_at) >
+      @reminder_threshold_seconds
+  end
+
+  defp send_pomo_active_reminder(_channel, sender) when is_binary(sender) and sender in @allow_list, do: nil
+
+  defp send_pomo_active_reminder(channel, sender)
+       when is_binary(channel) and is_binary(sender) and sender not in @allow_list do
+    Presence.track_pomo_presence(channel, sender)
+    Bot.say(channel, "Shhhh @#{sender}, it's time to focus. Use '!pomo info' to get more information.")
   end
 end
