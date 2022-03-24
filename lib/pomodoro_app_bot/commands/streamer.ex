@@ -9,6 +9,7 @@ defmodule PomodoroAppBot.Commands.Streamer do
   @commands [
     "!pomo start - starts a pomo session.",
     "!pomo end - ends a pomo session.",
+    "!pomo break - Get the pomo break time.",
     "!pomo break <breaktime> - sets the break time.",
     "!pomo time - Get the pomo session time.",
     "!pomo time <pomotime> - sets the pomo time.",
@@ -34,6 +35,10 @@ defmodule PomodoroAppBot.Commands.Streamer do
             PomoManagement.end_session(pomo_session, sender)
         end
 
+      "pomo break" ->
+        Bot.say(sender, "Pomo break time is set to #{channel_user.break_time} minutes.")
+
+
       "pomo break " <> breaktime ->
         case Integer.parse(breaktime) do
           :error ->
@@ -51,6 +56,7 @@ defmodule PomodoroAppBot.Commands.Streamer do
 
       "pomo time" ->
         Bot.say(sender, "Pomo session time is set to #{channel_user.pomo_time} minutes.")
+
       "pomo time " <> pomotime ->
         case Integer.parse(pomotime) do
           :error ->

@@ -1,6 +1,7 @@
 defmodule PomodoroAppBot.Commands.Global do
   require Logger
   alias PomodoroApp.Pomos
+  alias PomodoroApp.Pomos.PomoSession
   alias PomodoroApp.Accounts.User
   alias PomodoroAppBot.{Bot, PomoManagement}
 
@@ -38,10 +39,7 @@ defmodule PomodoroAppBot.Commands.Global do
 
       "pomo join" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
-          nil ->
-            Bot.say(channel_user.username, "There isnt a pomo currently active.")
-
-          pomo_session ->
+          %PomoSession{} = pomo_session ->
             with {:ok, member} <- Pomos.find_or_create_member(sender),
                  attrs <- Pomos.build_pomo_session_member_attrs(member, pomo_session),
                  {:ok, _session_member} <- Pomos.create_pomo_session_member(attrs) do
@@ -52,6 +50,9 @@ defmodule PomodoroAppBot.Commands.Global do
             else
               _ -> Bot.say(channel_user.username, "Error joining pomo.")
             end
+
+          nil ->
+            Bot.say(channel_user.username, "There isnt a pomo currently active.")
         end
 
       "pomo stats" ->
