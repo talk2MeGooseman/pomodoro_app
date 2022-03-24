@@ -39,6 +39,7 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
       socket
       |> assign(:active_pomo, nil)
       |> update(:past_pomo_sessions, fn pomos -> [session | pomos] end)
+      |> push_event("pomo_end", %{})
 
     {:noreply, socket}
   end
