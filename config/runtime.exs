@@ -44,7 +44,7 @@ if config_env() == :prod do
         bot: PomodoroAppBot.Bot,
         user: "gooseman_bot",
         pass: System.get_env("POMODORO_APP_BOT_SECRET"),
-        channels: ["talk2megooseman"],
+        channels: ["talk2megooseman", "codingzeal"],
         debug: false
       ]
     ]
@@ -52,5 +52,5 @@ if config_env() == :prod do
   config :ueberauth, Ueberauth.Strategy.Twitch.OAuth,
     client_id: System.get_env("TWITCH_CLIENT_ID"),
     client_secret: System.get_env("TWITCH_CLIENT_SECRET"),
-    redirect_uri: "#{app_name}.fly.dev/auth/twitch/callback"
+    redirect_uri: "https://#{app_name}.fly.dev/auth/twitch/callback"
 end
