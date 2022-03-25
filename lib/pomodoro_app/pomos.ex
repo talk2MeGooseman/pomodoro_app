@@ -67,7 +67,7 @@ defmodule PomodoroApp.Pomos do
       Phoenix.PubSub.broadcast(
         PomodoroApp.PubSub,
         "overlay:#{session.user_id}",
-        {:created, session}
+        {:created_session, session}
       )
     end)
   end
@@ -79,7 +79,7 @@ defmodule PomodoroApp.Pomos do
       Phoenix.PubSub.broadcast(
         PomodoroApp.PubSub,
         "overlay:#{session.user_id}",
-        {:updated, session}
+        {:updated_session, session}
       )
     end)
   end

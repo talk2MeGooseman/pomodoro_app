@@ -365,11 +365,26 @@ defmodule PomodoroApp.Accounts do
   end
 
   def update_user_pomo_time(%User{} = user, time) do
-    User.pomo_time_changeset(user, %{ pomo_time: time }) |> Repo.update()
+    user
+    |> User.pomo_time_changeset(%{pomo_time: time})
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        Phoenix.PubSub.broadcast(
+          PomodoroApp.PubSub,
+          "overlay:#{user.id}",
+          {:updated_user, user}
+        )
+
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def update_user_break_time(%User{} = user, time) do
-    User.break_time_changeset(user, %{ break_time: time }) |> Repo.update()
+    User.break_time_changeset(user, %{break_time: time}) |> Repo.update()
   end
 
   @spec find_or_register_user_with_oauth(map, map) :: {:ok, %{user: any} | {:error, any}}

@@ -9,7 +9,7 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
   data past_pomo_sessions, :list, default: []
 
   @impl true
-  def mount(%{ "id" => user_id}, session, socket) do
+  def mount(%{"id" => user_id}, session, socket) do
     if connected?(socket), do: Phoenix.PubSub.subscribe(PomodoroApp.PubSub, "overlay:#{user_id}")
     user = Accounts.get_user!(user_id)
 
@@ -28,13 +28,17 @@ defmodule PomodoroAppWeb.OverlayLive.Show do
   end
 
   @impl true
-  def handle_info({:created, session}, socket) do
-    socket = assign(socket, :active_pomo, session)
-    {:noreply, socket}
+  def handle_info({:created_session, session}, socket) do
+    {:noreply, assign(socket, :active_pomo, session)}
   end
 
   @impl true
-  def handle_info({:updated, session}, socket) do
+  def handle_info({:updated_user, user}, socket) do
+    {:noreply, assign(socket, :user, user)}
+  end
+
+  @impl true
+  def handle_info({:updated_session, session}, socket) do
     socket =
       socket
       |> assign(:active_pomo, nil)
