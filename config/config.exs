@@ -39,7 +39,8 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ],
   catalogue: [
-    args: ~w(../deps/surface_catalogue/assets/js/app.js --bundle --target=es2016 --minify --outdir=../priv/static/assets/catalogue),
+    args:
+      ~w(../deps/surface_catalogue/assets/js/app.js --bundle --target=es2016 --minify --outdir=../priv/static/assets/catalogue),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -53,7 +54,8 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :surface, :components, [
-  {Surface.Components.Form.ErrorTag, default_translator: {PomodoroAppWeb.ErrorHelpers, :translate_error}}
+  {Surface.Components.Form.ErrorTag,
+   default_translator: {PomodoroAppWeb.ErrorHelpers, :translate_error}}
 ]
 
 config :pomodoro_app,
@@ -62,7 +64,7 @@ config :pomodoro_app,
       bot: PomodoroAppBot.Bot,
       user: "gooseman_bot",
       pass: System.get_env("POMODORO_APP_BOT_SECRET"),
-      channels: ["talk2megooseman"],
+      channels: [],
       debug: false
     ]
   ]
@@ -74,7 +76,13 @@ config :ueberauth, Ueberauth,
 
 config :pomodoro_app, Oban,
   repo: PomodoroApp.Repo,
-  plugins: [Oban.Plugins.Pruner],
+  plugins: [
+    Oban.Plugins.Pruner,
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"* * * * *", PomodoroApp.Workers.JoinChat}
+     ]}
+  ],
   queues: [default: 10]
 
 # Import environment specific config. This must remain at the bottom

@@ -6,7 +6,7 @@ defmodule PomodoroApp.Accounts do
   import Ecto.Query, warn: false
   alias PomodoroApp.Repo
 
-  alias PomodoroApp.Accounts.{User, UserToken, UserNotifier}
+  alias PomodoroApp.Accounts.{User, UserToken, UserNotifier, AccountQueries}
 
   ## Database getters
 
@@ -59,6 +59,11 @@ defmodule PomodoroApp.Accounts do
 
   """
   def get_user!(id), do: Repo.get!(User, id)
+
+  def get_all_missing_users(user_list) when is_list(user_list) do
+    AccountQueries.usernames_not_in(user_list)
+    |> Repo.all()
+  end
 
   ## User registration
 

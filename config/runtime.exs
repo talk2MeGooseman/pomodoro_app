@@ -44,7 +44,7 @@ if config_env() == :prod do
         bot: PomodoroAppBot.Bot,
         user: "gooseman_bot",
         pass: System.get_env("POMODORO_APP_BOT_SECRET"),
-        channels: ["talk2megooseman", "codingzeal"],
+        channels: [],
         debug: false
       ]
     ]
