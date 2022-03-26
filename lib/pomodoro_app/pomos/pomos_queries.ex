@@ -2,7 +2,6 @@ defmodule PomodoroApp.Pomos.PomosQueries do
   import Ecto.Query, warn: false
 
   alias PomodoroApp.Pomos.{PomoSession, Member, PomoSessionMember}
-  alias PomodoroApp.Repo
 
   def sessions_with_id(query \\ session_base(), id) do
     query
@@ -21,7 +20,7 @@ defmodule PomodoroApp.Pomos.PomosQueries do
 
   def sessions_after(query \\ session_base(), %DateTime{} = datetime) do
     query
-    |> where([session], session.start >= ^datetime)
+    |> where([session], session.start <= ^datetime)
   end
 
   def sessions_with_user_id(query \\ session_base(), user_id)
@@ -55,7 +54,7 @@ defmodule PomodoroApp.Pomos.PomosQueries do
       when is_binary(user_id) or is_integer(user_id) do
     query
     |> join(:left, [member], session in assoc(member, :pomo_sessions),
-      on: session.active == false and session.start >= ^datetime and session.user_id == ^user_id
+      on: session.active == false and session.start <= ^datetime and session.user_id == ^user_id
     )
   end
 
