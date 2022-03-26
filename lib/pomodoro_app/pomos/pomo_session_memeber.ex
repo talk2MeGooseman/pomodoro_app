@@ -15,6 +15,6 @@ defmodule PomodoroApp.Pomos.PomoSessionMember do
     pomo_session_members
     |> cast(attrs, [:pomo_time, :goal, :member_id, :pomo_session_id])
     |> validate_required([:member_id, :pomo_time, :pomo_session_id])
-    |> unique_constraint([:member_id, :pomo_session_id])
+    |> unique_constraint([:pomo_session_id, :member_id])
   end
 end

@@ -71,6 +71,7 @@ defmodule PomodoroAppBot.PomoManagement do
         "@#{sender} thanks for joining in, now it's time to focus."
       )
     else
+      {:error, _changeset} -> Bot.say(channel, "@#{sender} You are already a member of this pomo.")
       _ -> Bot.say(channel, "Error joining pomo.")
     end
   end
