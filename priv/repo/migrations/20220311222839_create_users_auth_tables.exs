@@ -15,6 +15,8 @@ defmodule PomodoroApp.Repo.Migrations.CreateUsersAuthTables do
       add :uid, :string
       add :username, :string
       add :break_time, :integer, null: true, default: 10
+      add :mute, :boolean, null: false, default: false
+      add :disconnect, :boolean, null: false, default: false
 
       timestamps()
     end

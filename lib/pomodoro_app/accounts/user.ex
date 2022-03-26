@@ -14,6 +14,8 @@ defmodule PomodoroApp.Accounts.User do
     field :access_token, :string, redact: true
     field :refresh_token, :string, redact: true
     field :break_time, :integer
+    field :mute, :boolean
+    field :disconnect, :boolean
 
     timestamps()
   end
@@ -138,6 +140,16 @@ defmodule PomodoroApp.Accounts.User do
   def break_time_changeset(user, attrs) do
     user
     |> cast(attrs, [:break_time])
+  end
+
+  def mute_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:mute])
+  end
+
+  def disconnect_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:disconnect])
   end
 
   @doc """

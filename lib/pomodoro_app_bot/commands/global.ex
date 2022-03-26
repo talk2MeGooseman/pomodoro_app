@@ -8,6 +8,7 @@ defmodule PomodoroAppBot.Commands.Global do
   @commands [
     "!pomo - How much time is left.",
     "!pomo join - Join the pomo and begin tracking your stats.",
+    "!pomo join <your goal> - Join the pomo with a goal and begin tracking your stats.",
     "!pomo stats - See stats for all your previous pomos.",
     "!pomo today - See stats for all your pomos in the last 24 hours.",
     "!pomo info - Get info about what's happening."
@@ -44,6 +45,15 @@ defmodule PomodoroAppBot.Commands.Global do
 
           pomo_session ->
             PomoManagement.join_session(pomo_session, channel_user.username, sender)
+        end
+
+      "pomo join " <> goal ->
+        case Pomos.get_active_pomo_for(channel_user.id) do
+          nil ->
+            Bot.say(channel_user.username, "There isnt a pomo currently active.")
+
+          pomo_session ->
+            PomoManagement.join_session(pomo_session, channel_user.username, sender, goal)
         end
 
       "pomo stats" ->
@@ -103,7 +113,9 @@ defmodule PomodoroAppBot.Commands.Global do
     _ -> Logger.warn("Error occurred")
   end
 
-  defp calculate_stats(list) do
+  defp calculate_stats([]), do: %{count: 0, total_time: 0}
+
+  defp calculate_stats(list) when is_list(list) do
     list
     |> Enum.reject(&is_nil(&1))
     |> Enum.reduce(%{count: 0, total_time: 0}, fn s, acc ->

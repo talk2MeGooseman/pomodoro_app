@@ -61,10 +61,10 @@ defmodule PomodoroAppBot.PomoManagement do
     end
   end
 
-  def join_session(%PomoSession{} = pomo_session, channel, sender)
+  def join_session(%PomoSession{} = pomo_session, channel, sender, goal \\ nil)
       when is_binary(channel) and is_binary(sender) do
     with {:ok, member} <- Pomos.find_or_create_member(sender),
-         attrs <- Pomos.build_pomo_session_member_attrs(member, pomo_session),
+         attrs <- Pomos.build_pomo_session_member_attrs(member, pomo_session, goal),
          {:ok, _session_member} <- Pomos.create_pomo_session_member(attrs) do
       Bot.say(
         channel,

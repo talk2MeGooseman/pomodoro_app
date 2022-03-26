@@ -9,9 +9,15 @@ defmodule PomodoroApp.Workers.JoinChat do
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
     connected_channels = PomodoroAppBot.Bot.list_channels()
+
     Accounts.get_all_missing_users(connected_channels)
-    |> Enum.each(&Bot.join(&1.username))
+    |> Enum.each(&join_and_confirm(&1.username))
 
     :ok
+  end
+
+  def join_and_confirm(username) when is_binary(username) do
+    Bot.join(username)
+    Bot.say(username, "Have no fear, pomodoro is here!")
   end
 end
