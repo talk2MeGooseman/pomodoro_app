@@ -56,6 +56,7 @@ defmodule PomodoroApp.MixProject do
       {:secure_random, "~> 0.5.1"},
       {:oban, "~> 2.11"},
       {:surface, "~> 0.7.1"},
+      {:ecto_extras, "~> 0.1.3"},
       {:surface_catalogue, "~> 0.4.0"}
     ]
   end
