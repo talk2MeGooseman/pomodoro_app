@@ -16,8 +16,7 @@ defmodule PomodoroAppBot.PomoManagement do
     |> tap(fn _ -> Presence.clean_up_pomo_presence(channel) end)
     |> case do
       {:ok, pomo_session} ->
-        seconds_delay = calculate_seconds_remaining(pomo_session)
-        enqueue_pomo_timer(pomo_session.id, channel, seconds_delay)
+        enqueue_pomo_timer(pomo_session.id, channel, pomo_session.end)
 
         Bot.say(
           channel,
@@ -87,9 +86,9 @@ defmodule PomodoroAppBot.PomoManagement do
     NaiveDateTime.diff(end_on, NaiveDateTime.utc_now())
   end
 
-  defp enqueue_pomo_timer(session_id, channel, seconds_delay) do
+  defp enqueue_pomo_timer(session_id, channel, %DateTime{} = end_on) do
     %{session_id: session_id, channel: channel}
-    |> PomodoroApp.Workers.EndPomo.new(schedule_in: seconds_delay)
+    |> PomodoroApp.Workers.EndPomo.new(scheduled_at: end_on)
     |> Oban.insert()
   end
 

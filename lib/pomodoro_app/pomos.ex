@@ -35,21 +35,17 @@ defmodule PomodoroApp.Pomos do
   end
 
   def pomo_active_for?(%PomodoroApp.Accounts.User{} = user) do
-    PomoSession
-    |> where(user_id: ^user.id)
-    |> where(active: true)
+    PomosQueries.sessions_with_user_id(user.id)
+    |> PomosQueries.sessions_with_active(true)
     |> Repo.exists?()
   end
 
   def pomo_sessions_since(%DateTime{} = time, user_id)
       when is_integer(user_id) or is_binary(user_id) do
-    Repo.all(
-      from p in PomoSession,
-        where: p.start >= ^time,
-        where: p.active == false,
-        where: p.user_id == ^user_id,
-        select: p
-    )
+    PomosQueries.sessions_with_user_id(user_id)
+    |> PomosQueries.sessions_after(time)
+    |> PomosQueries.sessions_with_active(false)
+    |> Repo.all()
   end
 
   def pomo_session_members(%PomoSession{id: id}) do
@@ -113,11 +109,16 @@ defmodule PomodoroApp.Pomos do
     |> Repo.all()
   end
 
+  @spec member_previous_channel_sessions_since(binary, DateTime.t(), binary | integer) :: any
   def member_previous_channel_sessions_since(username, %DateTime{} = datetime, user_id)
       when is_binary(username) and (is_integer(user_id) or is_binary(user_id)) do
     PomosQueries.member_with_username(username)
     |> PomosQueries.members_joined_completed_channel_sessions_since(datetime, user_id)
-    |> select([member, session, session_member], session_member)
+    |> select([member, session, session_member], %{
+      member: member,
+      session_member: session_member,
+      session: session
+    })
     |> Repo.all()
   end
 
@@ -128,10 +129,10 @@ defmodule PomodoroApp.Pomos do
         %PomoSession{id: id, end: end_on},
         goal \\ nil
       ) do
-
     time_remaining_in_minutes = DateTime.diff(end_on, DateTime.utc_now()) / 60
+
     %{
-      pomo_time: floor(time_remaining_in_minutes),
+      pomo_time: ceil(time_remaining_in_minutes),
       goal: goal,
       member_id: member_id,
       pomo_session_id: id

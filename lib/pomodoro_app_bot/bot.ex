@@ -2,12 +2,10 @@ defmodule PomodoroAppBot.Bot do
   use TMI
 
   require Logger
-  alias PomodoroAppWeb.Presence
-  alias PomodoroApp.{Accounts, Pomos}
-  alias PomodoroApp.Accounts.User
+
+  alias PomodoroApp.Accounts
   alias PomodoroAppBot.PomoManagement
   alias PomodoroAppBot.Commands.{Global, Streamer}
-
 
   @impl TMI.Handler
   # Channel Commands
