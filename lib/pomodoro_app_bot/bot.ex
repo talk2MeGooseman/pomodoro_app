@@ -23,6 +23,7 @@ defmodule PomodoroAppBot.Bot do
   end
 
   # Standard Chat Message
+  def handle_message(_message, sender, "#" <> channel) when sender == channel, do: nil
   def handle_message(_message, sender, "#" <> channel) do
     PomoManagement.handle_message(channel, sender)
   end

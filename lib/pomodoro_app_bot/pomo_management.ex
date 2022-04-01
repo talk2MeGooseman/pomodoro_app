@@ -102,7 +102,7 @@ defmodule PomodoroAppBot.PomoManagement do
   defp maybe_send_pomo_active_reminder(channel_user, sender) do
     case Presence.get_by_key("channel:#{channel_user.username}", sender) do
       [] ->
-        send_pomo_active_reminder(channel_user.username, sender)
+        send_welcome(channel_user.username, sender)
 
       %{
         metas: [
@@ -117,12 +117,19 @@ defmodule PomodoroAppBot.PomoManagement do
     end
   end
 
+  defp remind_user?(nil), do: true
   defp remind_user?(reminded_at) do
     DateTime.diff(DateTime.utc_now(), reminded_at) >
       @reminder_threshold_seconds
   end
 
   defp send_pomo_active_reminder(_channel, sender) when is_binary(sender) and sender in @allow_list, do: nil
+
+  defp send_welcome(channel, sender)
+       when is_binary(channel) and is_binary(sender) do
+    Presence.track_pomo_presence(channel, sender)
+    Bot.say(channel, "Hi @#{sender}! #{channel} currently has a pomo active so they cant talk right now. But if you like more information try using the '!pomo info' command. If you want to join in use '!pomo join' or '!pomo help' for more info.")
+  end
 
   defp send_pomo_active_reminder(channel, sender)
        when is_binary(channel) and is_binary(sender) and sender not in @allow_list do
