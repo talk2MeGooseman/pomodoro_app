@@ -18,6 +18,5 @@ defmodule PomodoroApp.Workers.JoinChat do
 
   def join_and_confirm(username) when is_binary(username) do
     Bot.join(username)
-    Bot.say(username, "Have no fear, pomodoro is here!")
   end
 end
