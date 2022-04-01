@@ -75,11 +75,11 @@ defmodule PomodoroAppBot.Commands.Global do
       "pomo today" ->
         case Pomos.get_member_by(sender) do
           %Pomos.Member{} = member ->
-            datetime = DateTime.add(DateTime.utc_now(), -@one_day_ago_in_seconds)
+            one_day_ago_datetime = DateTime.add(DateTime.utc_now(), -@one_day_ago_in_seconds)
 
             Pomos.member_previous_channel_sessions_since(
               member.username,
-              datetime,
+              one_day_ago_datetime,
               channel_user.id
             )
             |> calculate_stats()
@@ -90,7 +90,7 @@ defmodule PomodoroAppBot.Commands.Global do
               )
             end)
 
-          nil ->
+          _ ->
             Bot.say(channel_user.username, "@#{sender} you haven't completed any pomos yet.")
         end
 

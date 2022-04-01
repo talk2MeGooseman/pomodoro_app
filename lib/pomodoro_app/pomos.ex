@@ -114,11 +114,7 @@ defmodule PomodoroApp.Pomos do
       when is_binary(username) and (is_integer(user_id) or is_binary(user_id)) do
     PomosQueries.member_with_username(username)
     |> PomosQueries.members_joined_completed_channel_sessions_since(datetime, user_id)
-    |> select([member, session, session_member], %{
-      member: member,
-      session_member: session_member,
-      session: session
-    })
+    |> select([member, session, session_member], session)
     |> Repo.all()
   end
 
