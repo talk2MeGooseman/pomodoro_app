@@ -1,7 +1,7 @@
 defmodule PomodoroAppWeb.UserLiveAuth do
   import Phoenix.LiveView
 
-  def on_mount(:default, params, %{ "user_token" => user_token }, socket) do
+  def on_mount(:default, _params, %{ "user_token" => user_token }, socket) do
     socket = assign_new(socket, :current_user, fn ->
       PomodoroAppWeb.UserAuth.fetch_token_current_user(user_token)
     end)
@@ -13,7 +13,7 @@ defmodule PomodoroAppWeb.UserLiveAuth do
     end
   end
 
-  def on_mount(:default, params, session, socket) do
+  def on_mount(:default, _params, _session, socket) do
     {:halt, redirect(socket, to: "/")}
   end
 end

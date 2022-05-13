@@ -1,5 +1,6 @@
 defmodule PomodoroAppWeb.UserLive.Settings do
   use Surface.LiveView
+  on_mount PomodoroAppWeb.UserLiveAuth
 
   alias PomodoroApp.Accounts
   alias PomodoroApp.Accounts.User
@@ -9,9 +10,14 @@ defmodule PomodoroAppWeb.UserLive.Settings do
 
   @impl true
   def mount(_, _session, socket) do
-    data = Accounts.get_user!(1)
-    user = Accounts.change_user_settings(data)
-    socket = assign(socket, :user, user)
+    socket =
+      if socket.assigns.current_user do
+        user = Accounts.change_user_settings(socket.assigns.current_user)
+        assign(socket, :user, user)
+      else
+        redirect(socket, to: "/auth/twitch")
+      end
+
     {:ok, socket}
   end
 
@@ -62,8 +68,7 @@ defmodule PomodoroAppWeb.UserLive.Settings do
   end
 
   def handle_event("save", %{"user" => params}, socket) do
-    user = Accounts.get_user!(1)
-
+    user = socket.assigns.current_user
     changeset = User.user_settings_changeset(user, params)
 
     if changeset.valid? do
