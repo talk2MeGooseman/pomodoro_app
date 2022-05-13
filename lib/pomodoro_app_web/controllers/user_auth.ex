@@ -12,6 +12,8 @@ defmodule PomodoroAppWeb.UserAuth do
   @remember_me_cookie "_pomodoro_app_web_user_remember_me"
   @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
 
+  @spec log_in_user(Plug.Conn.t(), atom | %{:id => any, optional(any) => any}, any) ::
+          Plug.Conn.t()
   @doc """
   Logs the user in.
 
@@ -140,7 +142,7 @@ defmodule PomodoroAppWeb.UserAuth do
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: Routes.user_session_path(conn, :new))
+      |> redirect(to: Routes.auth_path(conn, :request, :twitch))
       |> halt()
     end
   end

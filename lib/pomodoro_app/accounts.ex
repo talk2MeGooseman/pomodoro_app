@@ -392,6 +392,14 @@ defmodule PomodoroApp.Accounts do
     User.break_time_changeset(user, %{break_time: time}) |> Repo.update()
   end
 
+  def change_user_settings(%User{} = user, params \\ %{}) do
+    User.user_settings_changeset(user, params)
+  end
+
+  def update_user_settings(%User{} = user, params \\ %{}) do
+    User.user_settings_changeset(user, params) |> Repo.update()
+  end
+
   @spec find_or_register_user_with_oauth(map, map) :: {:ok, %{user: any} | {:error, any}}
   def find_or_register_user_with_oauth(user_attrs, creds) do
     case get_user_for_provider("twitch", user_attrs["id"]) do

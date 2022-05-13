@@ -132,6 +132,13 @@ defmodule PomodoroApp.Accounts.User do
     change(user, confirmed_at: now)
   end
 
+  def user_settings_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:mute, :disconnect, :pomo_time, :break_time])
+    |> validate_number(:pomo_time, greater_than: 0)
+    |> validate_number(:break_time, greater_than: 0)
+  end
+
   def pomo_time_changeset(user, attrs) do
     user
     |> cast(attrs, [:pomo_time])
