@@ -82,7 +82,7 @@ defmodule PomodoroAppWeb.Router do
     get "/users/settings", UserSettingsController, :edit
     put "/users/settings", UserSettingsController, :update
 
-    live "/users/live-settings", UserLive.Settings
+    live "/users/pomo-settings", UserLive.Settings
   end
 
   scope "/", PomodoroAppWeb do

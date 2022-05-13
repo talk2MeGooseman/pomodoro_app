@@ -26,31 +26,31 @@ defmodule PomodoroAppWeb.UserLive.Settings do
     ~F"""
     <Form for={@user} change="validate" submit="save" opts={autocomplete: "off"}>
       <Field name={:pomo_time}>
-        <ErrorTag />
         <Label>Active work/study time</Label>
         <div class="control">
           <NumberInput />
+          <ErrorTag />
         </div>
       </Field>
       <Field name={:break_time}>
-        <ErrorTag field={:break_time} />
         <Label>Break time</Label>
         <div class="control">
           <NumberInput />
+          <ErrorTag field={:break_time} />
         </div>
       </Field>
       <Field name={:mute}>
-        <ErrorTag />
         <Label>Mute the pomodoro bot</Label>
         <div class="control">
           <Checkbox />
+          <ErrorTag />
         </div>
       </Field>
       <Field name={:disconnect}>
-        <ErrorTag />
         <Label>Pomodoro bot will not join your channel</Label>
         <div class="control">
           <Checkbox />
+          <ErrorTag />
         </div>
       </Field>
       <button disabled={!@user.valid?} type="submit">Save</button>
@@ -63,6 +63,7 @@ defmodule PomodoroAppWeb.UserLive.Settings do
     changeset =
       %Accounts.User{}
       |> Accounts.change_user_settings(params)
+      |> Map.merge(%{action: :insert})
 
     {:noreply, assign(socket, user: changeset)}
   end
