@@ -21,7 +21,7 @@ defmodule PomodoroAppBot.Commands.Streamer do
     case action do
       "pomo start" ->
         if Pomos.pomo_active_for?(channel_user) do
-          Bot.say(sender, "You already have a pomo running!")
+          maybe_say(channel_user, "You already have a pomo running!")
         else
           PomoManagement.start_session(channel_user, sender)
         end
@@ -29,51 +29,65 @@ defmodule PomodoroAppBot.Commands.Streamer do
       "pomo end" ->
         case Pomos.get_active_pomo_for(channel_user.id) do
           nil ->
-            Bot.say(sender, "There is no active pomo, '!pomo start' to begin the next one.")
+            maybe_say(
+              channel_user,
+              "There is no active pomo, '!pomo start' to begin the next one."
+            )
 
           pomo_session ->
             PomoManagement.end_session(pomo_session, sender)
         end
 
       "pomo break" ->
-        Bot.say(sender, "Pomo break time is set to #{channel_user.break_time} minutes.")
-
+        maybe_say(channel_user, "Pomo break time is set to #{channel_user.break_time} minutes.")
 
       "pomo break " <> breaktime ->
         case Integer.parse(breaktime) do
           :error ->
-            Bot.say(sender, "Invalid break time provided.")
+            maybe_say(channel_user, "Invalid break time provided.")
 
           _ ->
             case Accounts.update_user_break_time(channel_user, breaktime) do
               {:error, _} ->
-                Bot.say(sender, "Error updating break time.")
+                maybe_say(channel_user, "Error updating break time.")
 
               {:ok, channel_user} ->
-                Bot.say(sender, "Break time updated to #{channel_user.break_time} minutes.")
+                maybe_say(
+                  channel_user,
+                  "Break time updated to #{channel_user.break_time} minutes."
+                )
             end
         end
 
       "pomo time" ->
-        Bot.say(sender, "Pomo session time is set to #{channel_user.pomo_time} minutes.")
+        maybe_say(channel_user, "Pomo session time is set to #{channel_user.pomo_time} minutes.")
 
       "pomo time " <> pomotime ->
         case Integer.parse(pomotime) do
           :error ->
-            Bot.say(sender, "Invalid pomo time provided.")
+            maybe_say(channel_user, "Invalid pomo time provided.")
 
           _ ->
             PomoManagement.update_timer(channel_user, pomotime)
         end
 
       "pomo help" ->
-        Bot.say(
-          channel_user.username,
+        maybe_say(
+          channel_user,
           "@#{sender} #{Enum.join(@commands, " ")}"
         )
 
       _ ->
         Global.command(channel_user, action, sender)
+    end
+  end
+
+  def maybe_say(channel_user, message) do
+    if !channel_user.mute do
+      Bot.say(
+        String.downcase(channel_user.username),
+        message
+      )
     end
   end
 end

@@ -19,7 +19,9 @@ defmodule PomodoroAppBot.Bot do
   # Viewer Commands
   def handle_message("!" <> command, sender, "#" <> channel) do
     channel_user = Accounts.get_user_by_username(channel)
-    Global.command(channel_user, command, sender)
+    if !channel_user.mute do
+      Global.command(channel_user, command, sender)
+    end
   end
 
   # Standard Chat Message

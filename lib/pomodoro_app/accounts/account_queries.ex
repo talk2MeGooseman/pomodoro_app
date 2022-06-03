@@ -8,6 +8,11 @@ defmodule PomodoroApp.Accounts.AccountQueries do
     |> where([user], user.id == ^id)
   end
 
+  def with_disconnect(query \\ user_base(), value) do
+    query
+    |> where([user], user.disconnect == ^value)
+  end
+
   def usernames_not_in(query \\ user_base(), usernames) do
     query
     |> where([user], user.username not in ^usernames)

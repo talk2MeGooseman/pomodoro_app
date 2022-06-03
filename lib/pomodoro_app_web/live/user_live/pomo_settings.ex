@@ -1,10 +1,8 @@
-defmodule PomodoroAppWeb.UserLive.Settings do
+defmodule PomodoroAppWeb.UserLive.PomoSettings do
   use Surface.LiveView
   on_mount PomodoroAppWeb.UserLiveAuth
 
   alias PomodoroApp.Accounts
-  alias PomodoroApp.Accounts.User
-  alias PomodoroApp.Repo
   alias Surface.Components.Form
   alias Surface.Components.Form.{Label, Field, NumberInput, Checkbox, ErrorTag}
 
@@ -70,12 +68,14 @@ defmodule PomodoroAppWeb.UserLive.Settings do
 
   def handle_event("save", %{"user" => params}, socket) do
     user = socket.assigns.current_user
-    changeset = User.user_settings_changeset(user, params)
 
-    if changeset.valid? do
-      Repo.update(changeset)
+    case Accounts.update_user_settings(user, params) do
+      {:ok, user} ->
+        changeset = Accounts.change_user_settings(user, %{})
+        {:noreply, assign(socket, user: changeset)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, user: changeset)}
     end
-
-    {:noreply, assign(socket, user: changeset)}
   end
 end

@@ -10,7 +10,7 @@ defmodule PomodoroApp.Workers.JoinChat do
   def perform(%Oban.Job{}) do
     connected_channels = PomodoroAppBot.Bot.list_channels()
 
-    Accounts.get_all_missing_users(connected_channels)
+    Accounts.get_all_missing_connect_users(connected_channels)
     |> Enum.each(&join_and_confirm(&1.username))
 
     :ok

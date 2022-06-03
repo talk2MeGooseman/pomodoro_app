@@ -60,8 +60,9 @@ defmodule PomodoroApp.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
-  def get_all_missing_users(user_list) when is_list(user_list) do
-    AccountQueries.usernames_not_in(user_list)
+  def get_all_missing_connect_users(user_list) when is_list(user_list) do
+    AccountQueries.with_disconnect(false)
+    |> AccountQueries.usernames_not_in(user_list)
     |> Repo.all()
   end
 
@@ -373,19 +374,7 @@ defmodule PomodoroApp.Accounts do
     user
     |> User.pomo_time_changeset(%{pomo_time: time})
     |> Repo.update()
-    |> case do
-      {:ok, user} ->
-        Phoenix.PubSub.broadcast(
-          PomodoroApp.PubSub,
-          "overlay:#{user.id}",
-          {:updated_user, user}
-        )
-
-        {:ok, user}
-
-      {:error, changeset} ->
-        {:error, changeset}
-    end
+    |> maybe_publish_user_update()
   end
 
   def update_user_break_time(%User{} = user, time) do
@@ -397,7 +386,10 @@ defmodule PomodoroApp.Accounts do
   end
 
   def update_user_settings(%User{} = user, params \\ %{}) do
-    User.user_settings_changeset(user, params) |> Repo.update()
+    User.user_settings_changeset(user, params)
+    |> Repo.update()
+    |> maybe_publish_user_update()
+    |> maybe_bot_parts()
   end
 
   @spec find_or_register_user_with_oauth(map, map) :: {:ok, %{user: any} | {:error, any}}
@@ -423,5 +415,31 @@ defmodule PomodoroApp.Accounts do
           refresh_token: creds[:refresh_token]
         })
     end
+  end
+
+  @spec maybe_publish_user_update(
+          {:error, any}
+          | {:ok, %PomodoroApp.Accounts.User{}}
+        ) :: {:error, any} | {:ok, %PomodoroApp.Accounts.User{}}
+  def maybe_publish_user_update({:error, _} = result), do: result
+
+  def maybe_publish_user_update({:ok, %User{} = user}) do
+    Phoenix.PubSub.broadcast(
+      PomodoroApp.PubSub,
+      "overlay:#{user.id}",
+      {:updated_user, user}
+    )
+
+    {:ok, user}
+  end
+
+  def maybe_bot_parts({:error, _} = result), do: result
+
+  def maybe_bot_parts({:ok, %User{} = user}) do
+    if user.disconnect do
+      PomodoroAppBot.Bot.part(user.username)
+    end
+
+    {:ok, user}
   end
 end
